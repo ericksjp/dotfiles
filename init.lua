@@ -19,26 +19,7 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- some plugins
-local plugins = {
-  { -- colorscheme
-    "polirritmico/monokai-nightasty.nvim",
-    lazy = false,
-    priority = 1000,
-    opts = {
-      dark_style_background = "transparent",
-    }
-  },
-  { --telescopio 
-    'nvim-telescope/telescope.nvim', tag = '0.1.6',
-    dependencies = { 'nvim-lua/plenary.nvim' }
-  }, --treesitter
-  {"nvim-treesitter/nvim-treesitter", build = ":TSUpdate"}
-}
-
-local opts = {}
-
-require("lazy").setup(plugins, opts) -- bootin
+require("lazy").setup("plugins") -- bootin
 
 -- keymaping telescopio
 local builtin = require('telescope.builtin')
@@ -46,6 +27,8 @@ vim.keymap.set('n', '<leader>ff', builtin.find_files, {})
 vim.keymap.set('n', '<leader>fg', builtin.live_grep, {})
 vim.keymap.set('n', '<leader>fb', builtin.buffers, {})
 vim.keymap.set('n', '<leader>fh', builtin.help_tags, {})
+
+vim.keymap.set('n', '<C-n>', ':Neotree filesystem reveal left<CR>')
 
 -- setting some treesitter configs
 local config = require("nvim-treesitter.configs")
