@@ -1,11 +1,11 @@
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
-		tag = "v0.9.1",
 		opts = {
 			ensure_installed = {
 				"javascript",
 				"typescript",
+				"tsx",
 				"css",
 				"gitignore",
 				"graphql",
@@ -15,18 +15,23 @@ return {
 				"sql",
 				"vim",
 				"lua",
-				"java",
 				"c",
+				"cpp",
 				"bash",
+				"java",
+				"vimdoc",
 			},
 			query_linter = {
 				enable = true,
 				use_virtual_text = true,
 				lint_events = { "BufWrite", "CursorHold" },
 			},
+			indent = {
+				enable = true,
+			},
 			highlight = {
 				enable = true, -- Enable treesitter highlighting
-				additional_vim_regex_highlighting = true,
+				additional_vim_regex_highlighting = false,
 			},
 		},
 	},

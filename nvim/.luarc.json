@@ -2,6 +2,7 @@
     "diagnostics.disable": [
         "incomplete-signature-doc",
         "trailing-space",
-        "missing-fields"
+        "no-unknown",
+        "missing-global-doc"
     ]
 }

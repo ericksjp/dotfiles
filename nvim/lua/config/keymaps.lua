@@ -2,40 +2,42 @@ local keymap = vim.keymap
 local opts = { noremap = true, silent = true }
 
 keymap.set("n", "x", '"_x')
+keymap.set("n", "<Leader>h", '"_')
+keymap.set("n", "yl", "0y$")
+keymap.set("n", "dl", "0d$")
+keymap.set("n", "cl", "0c$")
 
 -- Increment/decrement
 keymap.set("n", "+", "<C-a>")
 keymap.set("n", "-", "<C-x>")
 
+keymap.set("n", "\\", "/")
+
 -- Select all
+
 keymap.set("n", "<C-a>", "gg<S-v>G")
 
 -- Save file and quit
--- keymap.set("n", "<Leader>w", ":update<Return>", opts)
+keymap.set("n", "<Leader>wa", ":w<Return>", opts)
+keymap.set("n", "<Leader>wA", ":wall<Return>", opts)
+keymap.set("n", "<Leader>qw", ":sus<Return>", opts)
 -- keymap.set("n", "<Leader>q", ":quit<Return>", opts)
--- keymap.set("n", "<Leader>Q", ":qa<Return>", opts)
 
 -- Tabs
-keymap.set("n", "te", ":tabedit")
 keymap.set("n", "<tab>", ":tabnext<Return>", opts)
-keymap.set("n", "<s-tab>", ":tabprev<Return>", opts)
-keymap.set("n", "tw", ":tabclose<Return>", opts)
 
 -- Split window
 keymap.set("n", "ss", ":split<Return>", opts)
 keymap.set("n", "sv", ":vsplit<Return>", opts)
-
--- Move window
-keymap.set("n", "sh", "<C-w>h")
-keymap.set("n", "sk", "<C-w>k")
-keymap.set("n", "sj", "<C-w>j")
-keymap.set("n", "sl", "<C-w>l")
 
 -- Resize window
 keymap.set("n", "<C-S-h>", "<C-w><")
 keymap.set("n", "<C-S-l>", "<C-w>>")
 keymap.set("n", "<C-S-k>", "<C-w>+")
 keymap.set("n", "<C-S-j>", "<C-w>-")
+
+keymap.set("n", "L", ":bnext<CR>", opts)
+keymap.set("n", "H", ":bprev<CR>", opts)
 
 -- -- Diagnostics
 keymap.set("n", "<C-j>", function()
@@ -56,9 +58,60 @@ keymap.set("n", "<C-k>", function()
 	require("tmux").move_top()
 end, opts)
 
-keymap.set("n", "L", function()
-	vim.cmd("normal! o")
-	vim.cmd("startinsert")
+-- enter the cmd
+keymap.set("n", "ç", ": <backspace>")
+
+-- delete all buffers
+keymap.set("n", "<Leader>ba", function()
+	vim.cmd("%bd")
+end, opts)
+
+-- some of my
+ChangeWithCWD = true
+PineDir = "/home/erick/"
+
+function SetPineDir()
+	if require("oil").get_current_dir() then
+		PineDir = require("oil").get_current_dir()
+	else
+		PineDir = vim.fn.expand("%:p:h")
+	end
+
+	print("PineDirectory =", PineDir)
+end
+
+keymap.set("n", "nc", ":cd ")
+keymap.set("n", "nz", ":Z ")
+
+keymap.set("n", "<Leader>cw", function()
+	ChangeWithCWD = not ChangeWithCWD
+	print("ChangeWithCWD =", ChangeWithCWD)
+end, opts)
+keymap.set("n", "<Leader>pd", ":lua SetPineDir()<CR>", opts)
+
+local function spectreOpen(dir)
+	require("spectre").open({
+		is_insert_mode = true,
+		cwr = dir,
+		search_text = vim.fn.expand("<cword>"),
+	})
+	vim.defer_fn(function()
+		vim.cmd("5")
+	end, 100)
+end
+
+vim.keymap.set("n", "<leader>rc", function()
+	spectreOpen(vim.fn.getcwd())
 end)
 
-keymap.set("n", "ç", ":", opts)
+vim.keymap.set("n", "<leader>rr", function()
+	spectreOpen(LazyVim.root)
+end)
+
+vim.keymap.set("n", "<leader>rb", function()
+	spectreOpen(vim.fn.expand("%:p:h"))
+end)
+
+vim.keymap.set("n", "<leader>rp", function()
+	spectreOpen(PineDir)
+end)

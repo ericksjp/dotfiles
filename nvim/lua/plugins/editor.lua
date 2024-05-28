@@ -1,13 +1,7 @@
 return {
 	{
 		"nvim-neo-tree/neo-tree.nvim",
-		opts = {
-			window = {
-				mappings = {
-					["u"] = "open",
-				},
-			},
-		},
+		enabled = false,
 	},
 	{
 		"folke/flash.nvim",
@@ -53,34 +47,119 @@ return {
 		},
 		keys = {
 			{
-				";f",
+				",f",
+				desc = "File Navigation",
+			},
+
+			{
+				",fb",
 				function()
 					local builtin = require("telescope.builtin")
 					builtin.find_files({
 						no_ignore = false,
 						hidden = true,
+						cwd = vim.fn.expand("%:p:h"),
 					})
 				end,
-				desc = "Lists files in your current working directory, respects .gitignore",
+				desc = "Lists files in the Current Buffer dir, respects .gitignore",
 			},
+
 			{
-				";r",
+				",fr",
 				function()
 					local builtin = require("telescope.builtin")
-					builtin.live_grep()
+					builtin.find_files({
+						no_ignore = false,
+						hidden = true,
+						cwd = LazyVim.root(),
+					})
 				end,
-				desc = "Search for a string in your current working directory and get results live as you type, respects .gitignore",
+				desc = "Lists files in your Root dir, respects .gitignore",
 			},
+
 			{
-				"\\\\",
+				",fc",
 				function()
 					local builtin = require("telescope.builtin")
-					builtin.buffers()
+					builtin.find_files({
+						no_ignore = false,
+						hidden = true,
+						cwd = vim.fn.getcwd(),
+					})
+				end,
+				desc = "Lists files in your CWD, respects .gitignore",
+			},
+
+			{
+				",fp",
+				function()
+					local builtin = require("telescope.builtin")
+					builtin.find_files({
+						no_ignore = false,
+						hidden = true,
+						cwd = PineDir,
+					})
+				end,
+				desc = "Lists files in Pined Directory, respects .gitignore",
+			},
+
+			{
+				",n",
+				desc = "String Finder",
+			},
+
+			{
+				",nb",
+				function()
+					local builtin = require("telescope.builtin")
+					builtin.live_grep({
+						cwd = vim.fn.expand("%:p:h"),
+					})
+				end,
+				desc = "Search for a string in your current Buffer directory and get results live as you type, respects .gitignore",
+			},
+
+			{
+				",nr",
+				function()
+					local builtin = require("telescope.builtin")
+					builtin.live_grep({
+						cwd = LazyVim.root(),
+					})
+				end,
+				desc = "Search for a string in your Root Dir and get results live as you type, respects .gitignore",
+			},
+
+			{
+				",nc",
+				function()
+					local builtin = require("telescope.builtin")
+					builtin.live_grep({
+						cwd = vim.fn.getcwd(),
+					})
+				end,
+				desc = "Search for a string in your CWD and get results live as you type, respects .gitignore",
+			},
+
+			{
+				",\\",
+				function()
+					local builtin = require("telescope.builtin")
+					builtin.buffers({
+						mappings = {
+							n = {
+								["<c-d>"] = require("telescope.actions").delete_buffer,
+							}, -- n
+							i = {
+								["<c-d>"] = require("telescope.actions").delete_buffer,
+							},
+						},
+					})
 				end,
 				desc = "Lists open buffers",
 			},
 			{
-				";;",
+				",,",
 				function()
 					local builtin = require("telescope.builtin")
 					builtin.resume()
@@ -88,7 +167,7 @@ return {
 				desc = "Resume the previous telescope picker",
 			},
 			{
-				";e",
+				",e",
 				function()
 					local builtin = require("telescope.builtin")
 					builtin.diagnostics()
@@ -96,40 +175,16 @@ return {
 				desc = "Lists Diagnostics for all open buffers or a specific buffer",
 			},
 			{
-				";s",
+				",s",
 				function()
 					local builtin = require("telescope.builtin")
 					builtin.treesitter()
 				end,
 				desc = "Lists Function names, variables, from Treesitter",
 			},
-			{
-				"sf",
-				function()
-					local telescope = require("telescope")
-
-					local function telescope_buffer_dir()
-						return vim.fn.expand("%:p:h")
-					end
-
-					telescope.extensions.file_browser.file_browser({
-						path = "%:p:h",
-						cwd = telescope_buffer_dir(),
-						respect_gitignore = false,
-						hidden = true,
-						grouped = true,
-						previewer = false,
-						initial_mode = "normal",
-						layout_config = { height = 40 },
-					})
-				end,
-				desc = "Open File Browser with the path of the current buffer",
-			},
 		},
 		config = function(_, opts)
 			local telescope = require("telescope")
-			local actions = require("telescope.actions")
-			local fb_actions = require("telescope").extensions.file_browser.actions
 
 			opts.defaults = vim.tbl_deep_extend("force", opts.defaults, {
 				wrap_results = true,
@@ -138,7 +193,12 @@ return {
 				sorting_strategy = "ascending",
 				winblend = 0,
 				mappings = {
-					n = {},
+					n = {
+						["<C-d>"] = require("telescope.actions").delete_buffer,
+					}, -- n
+					i = {
+						["<C-d>"] = require("telescope.actions").delete_buffer,
+					},
 				},
 			})
 			opts.pickers = {
@@ -150,34 +210,8 @@ return {
 					},
 				},
 			}
-			opts.extensions = {
-				file_browser = {
-					theme = "dropdown",
-					-- disables netrw and use telescope-file-browser in its place
-					hijack_netrw = true,
-					mappings = {
-						-- your custom insert mode mappings
-						["n"] = {
-							-- your custom normal mode mappings
-							["N"] = fb_actions.create,
-							["h"] = fb_actions.goto_parent_dir,
-							["<C-u>"] = function(prompt_bufnr)
-								for i = 1, 10 do
-									actions.move_selection_previous(prompt_bufnr)
-								end
-							end,
-							["<C-d>"] = function(prompt_bufnr)
-								for i = 1, 10 do
-									actions.move_selection_next(prompt_bufnr)
-								end
-							end,
-						},
-					},
-				},
-			}
 			telescope.setup(opts)
 			require("telescope").load_extension("fzf")
-			require("telescope").load_extension("file_browser")
 		end,
 	},
 }

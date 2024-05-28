@@ -1,34 +1,7 @@
 return {
 	{
-		"epwalsh/obsidian.nvim",
-		version = "*", -- recommended, use latest release instead of latest commit
-		lazy = false,
-		ft = "markdown",
-		dependencies = {
-			-- Required.
-			"nvim-lua/plenary.nvim",
-
-			-- see below for full list of optional dependencies 👇
-		},
-		config = function()
-			require("obsidian").setup({
-				workspaces = {
-					{
-						name = "personal",
-						path = "~/vaults/personal",
-					},
-					{
-						name = "work",
-						path = "~/vaults/work",
-					},
-				},
-			})
-		end,
-	},
-
-	{
 		"lukas-reineke/indent-blankline.nvim",
-		enabled = true,
+		enabled = false,
 	},
 	{
 		"echasnovski/mini.indentscope",
@@ -40,24 +13,29 @@ return {
 	},
 	{
 		"nvim-lualine/lualine.nvim",
-		dependencies = {
-			"catppuccin/nvim",
-			name = "catppuccin",
-			priority = 1000,
-		},
 		enabled = true,
-		-- config = function()
-		-- 	require("lualine").setup({
-		-- 		options = {
-		-- 			theme = "catppuccin",
-		-- 		},
-		-- 	})
-		-- end,
+		config = function()
+			require("lualine").setup({
+				options = {
+					icons_enabled = true,
+					theme = "vscode",
+					component_separators = { left = "-", right = "-" },
+					section_separators = { left = "", right = "" },
+				},
+			})
+		end,
 	},
 
 	-- messages, cmdline and the popupmenu
 	{
 		"folke/noice.nvim",
+		-- config = function()
+		-- 	require("noice").setup({
+		-- 		cmdline = {
+		-- 			view = "cmdline",
+		-- 		},
+		-- 	})
+		-- end,
 		opts = function(_, opts)
 			table.insert(opts.routes, {
 				filter = {
@@ -86,6 +64,34 @@ return {
 				view = "notify_send",
 				opts = { stop = false },
 			})
+
+			opts.cmdline = {
+				view = "cmdline", -- view for rendering the cmdline. Change to `cmdline` to get a classic cmdline at the bottom
+				format = {
+					cmdline = {
+						icon = " :",
+					},
+					lua = {
+						icon = " :𝗟",
+					},
+					filter = {
+						icon = " :$",
+					},
+					help = {
+						icon = " :",
+					},
+					search_down = {
+						icon = "  ",
+					},
+					search_up = {
+						icon = "  ",
+					},
+				},
+			}
+
+			opts.popupmenu = {
+				backend = "cmp",
+			}
 
 			opts.commands = {
 				all = {
@@ -120,45 +126,6 @@ return {
 				mode = "tabs",
 				show_buffer_close_icons = false,
 				show_close_icon = false,
-			},
-		},
-	},
-	-- LazyGit integration with Telescope
-	{
-		"kdheepak/lazygit.nvim",
-		keys = {
-			{
-				";c",
-				":LazyGit<Return>",
-				silent = true,
-				noremap = true,
-			},
-		},
-		-- optional for floating window border decoration
-		dependencies = {
-			"nvim-lua/plenary.nvim",
-		},
-	},
-	{
-		"kristijanhusak/vim-dadbod-ui",
-		dependencies = {
-			{ "tpope/vim-dadbod", lazy = true },
-			{ "kristijanhusak/vim-dadbod-completion", ft = { "sql", "mysql", "plsql" }, lazy = true },
-		},
-		cmd = {
-			"DBUI",
-			"DBUIToggle",
-			"DBUIAddConnection",
-			"DBUIFindBuffer",
-		},
-		init = function()
-			-- Your DBUI configuration
-			vim.g.db_ui_use_nerd_fonts = 1
-		end,
-		keys = {
-			{
-				"<leader>d",
-				"<cmd>Neotree close<cr><cmd>tabnew<cr><bar><bar><cmd>DBUI<cr>",
 			},
 		},
 	},

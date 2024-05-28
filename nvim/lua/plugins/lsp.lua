@@ -1,3 +1,4 @@
+---@diagnostic disable: missing-fields
 return {
 	-- tools
 	{
@@ -23,8 +24,17 @@ return {
 			inlay_hints = { enabled = true },
 			---@type lspconfig.options
 			servers = {
-				clangd = {},
-				jdtls = {},
+				clangd = {
+					cmd = {
+						"clangd",
+						"--offset-encoding=utf-16",
+					},
+				},
+				jdtls = {
+					root_dir = function(...)
+						return require("lspconfig.util").root_pattern("pom.xml", ".git")(...)
+					end,
+				},
 				cssls = {},
 				tailwindcss = {
 					root_dir = function(...)
@@ -128,14 +138,6 @@ return {
 					},
 				},
 			},
-			-- setup = {},
 		},
-	},
-	{
-		"nvim-cmp",
-		dependencies = { "hrsh7th/cmp-emoji" },
-		opts = function(_, opts)
-			table.insert(opts.sources, { name = "emoji" })
-		end,
 	},
 }
