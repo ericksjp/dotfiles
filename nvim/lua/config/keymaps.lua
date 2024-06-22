@@ -3,7 +3,7 @@ local opts = { noremap = true, silent = true }
 
 -- delete without copy
 keymap.set("n", "x", '"_x')
-keymap.set("n", ";", '"_')
+keymap.set("n", ",", '"_')
 
 -- line motions
 keymap.set("n", "yl", "0y$")
@@ -116,3 +116,29 @@ end)
 vim.keymap.set("n", "<leader>rp", function()
   spectreOpen(PineDir)
 end)
+
+-- git helpers
+vim.keymap.set("n", "<Leader>jn", ":Neogit<CR>", { silent = true, noremap = true, desc = "Open Neogit" })
+vim.keymap.set("n", "<Leader>jc", ":Neogit commit<CR>", { silent = true, noremap = true, desc = "Commit changes" })
+vim.keymap.set("n", "<Leader>jp", ":Neogit pull<CR>", { silent = true, noremap = true, desc = "Pull changes" })
+vim.keymap.set("n", "<Leader>je", ":Neogit push<CR>", { silent = true, noremap = true, desc = "Push changes" })
+
+vim.keymap.set("n", "<Leader>kc", function()
+  require("telescope.builtin").git_commits({
+    layout_strategy = "horizontal",
+    layout_config = {
+      width = 0.99,
+      preview_width = 0.6,
+    },
+  })
+end, { silent = true, noremap = true, desc = "List commits" })
+
+vim.keymap.set("n", "<Leader>kb", function()
+  require("telescope.builtin").git_branches({
+    layout_strategy = "horizontal",
+    layout_config = {
+      width = 0.99,
+      preview_width = 0.6,
+    },
+  })
+end, { silent = true, noremap = true, desc = "List branches" })

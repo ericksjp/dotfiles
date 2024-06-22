@@ -9,6 +9,7 @@ return {
   },
   {
     "ramojus/mellifluous.nvim",
+    commit = "b77332a146f54ee3722fd8d64b9ec69b3e72f11b",
     config = function()
       require("mellifluous").setup({
         mellifluous = {

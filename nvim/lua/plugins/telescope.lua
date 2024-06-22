@@ -1,3 +1,16 @@
+local function GrepFiles(dir)
+  require("telescope.builtin").find_files({
+    no_ignore = false,
+    hidden = true,
+    cwd = dir,
+    mappings = {
+      i = {
+        ["<C-h>"] = require("telescope.actions").select_tab,
+      },
+    },
+  })
+end
+
 return {
   "telescope.nvim",
   priority = 1000,
@@ -10,69 +23,52 @@ return {
   },
   keys = {
     {
-      ",f",
-      desc = "File Navigation",
-    },
-
-    {
-      ",fb",
+      "sh",
       function()
-        local builtin = require("telescope.builtin")
-        builtin.find_files({
-          no_ignore = false,
-          hidden = true,
-          cwd = vim.fn.expand("%:p:h"),
-        })
+        GrepFiles(vim.fn.expand("%:p:h"))
       end,
       desc = "Lists files in the Current Buffer dir, respects .gitignore",
     },
 
     {
-      ",fr",
+      "sk",
       function()
-        local builtin = require("telescope.builtin")
-        builtin.find_files({
-          no_ignore = false,
-          hidden = true,
-          cwd = LazyVim.root(),
-        })
+        GrepFiles(LazyVim.root())
       end,
       desc = "Lists files in your Root dir, respects .gitignore",
     },
 
     {
-      ",fc",
+      "sj",
       function()
-        local builtin = require("telescope.builtin")
-        builtin.find_files({
-          no_ignore = false,
-          hidden = true,
-          cwd = vim.fn.getcwd(),
-        })
+        GrepFiles(vim.fn.getcwd())
       end,
       desc = "Lists files in your CWD, respects .gitignore",
     },
 
     {
-      ",fp",
+      "sl",
       function()
-        local builtin = require("telescope.builtin")
-        builtin.find_files({
-          no_ignore = false,
-          hidden = true,
-          cwd = PineDir,
-        })
+        GrepFiles(PineDir)
       end,
       desc = "Lists files in Pined Directory, respects .gitignore",
     },
 
     {
-      ",n",
+      "sg",
+      function()
+        local builtin = require("telescope.builtin")
+        builtin.git_branches()
+      end,
+    },
+
+    {
+      "ss",
       desc = "String Finder",
     },
 
     {
-      ",nb",
+      "ssh",
       function()
         local builtin = require("telescope.builtin")
         builtin.live_grep({
@@ -83,7 +79,7 @@ return {
     },
 
     {
-      ",nr",
+      "ssk",
       function()
         local builtin = require("telescope.builtin")
         builtin.live_grep({
@@ -94,7 +90,7 @@ return {
     },
 
     {
-      ",nc",
+      "ssj",
       function()
         local builtin = require("telescope.builtin")
         builtin.live_grep({
@@ -105,15 +101,24 @@ return {
     },
 
     {
-      ",\\",
+      "so",
       function()
         local builtin = require("telescope.builtin")
-        builtin.buffers()
+        builtin.buffers({
+          mappings = {
+            i = {
+              ["<C-d>"] = require("telescope.actions").delete_buffer,
+            },
+            n = {
+              ["<C-d>"] = require("telescope.actions").delete_buffer,
+            },
+          },
+        })
       end,
       desc = "Lists open buffers",
     },
     {
-      ",,",
+      "sq",
       function()
         local builtin = require("telescope.builtin")
         builtin.resume()
@@ -121,7 +126,7 @@ return {
       desc = "Resume the previous telescope picker",
     },
     {
-      ",e",
+      "sd",
       function()
         local builtin = require("telescope.builtin")
         builtin.diagnostics()
@@ -129,7 +134,7 @@ return {
       desc = "Lists Diagnostics for all open buffers or a specific buffer",
     },
     {
-      ",s",
+      "se",
       function()
         local builtin = require("telescope.builtin")
         builtin.treesitter()
@@ -148,10 +153,11 @@ return {
       winblend = 0,
       mappings = {
         n = {
-          ["<C-d>"] = require("telescope.actions").delete_buffer,
+          ["<c-d>"] = require("telescope.actions").delete_buffer,
         }, -- n
         i = {
-          ["<C-d>"] = require("telescope.actions").delete_buffer,
+          ["c-d>"] = require("telescope.actions").delete_buffer,
+          ["<c-t>"] = require("telescope.actions").select_tab,
         },
       },
     })

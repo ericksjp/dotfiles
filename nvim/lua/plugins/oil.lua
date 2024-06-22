@@ -42,7 +42,7 @@ return {
 
   keys = {
     {
-      "mb",
+      "sb",
       function()
         require("oil").open()
       end,
@@ -50,7 +50,7 @@ return {
       desc = "Open Oil (Current Buffer dir)",
     },
     {
-      "mr",
+      "sr",
       function()
         require("oil").open(LazyVim.root())
       end,
@@ -58,7 +58,7 @@ return {
       desc = "Open Oil (Root dir)",
     },
     {
-      "mc",
+      "sc",
       function()
         require("oil").open(vim.fn.getcwd())
       end,
@@ -66,7 +66,7 @@ return {
       desc = "Open Oil (cwd)",
     },
     {
-      "mp",
+      "sp",
       function()
         require("oil").open(PineDir)
       end,
@@ -74,7 +74,7 @@ return {
       desc = "Open Oil (PineDir)",
     },
     {
-      "<Leader>mb",
+      "ssb",
       function()
         require("oil").open_float()
       end,
@@ -82,7 +82,7 @@ return {
       desc = "Open Float Oil (Current Buffer dir)",
     },
     {
-      "<Leader>mr",
+      "ssr",
       function()
         require("oil").open_float(LazyVim.root())
       end,
@@ -90,7 +90,7 @@ return {
       desc = "Open Float Oil (Root dir)",
     },
     {
-      "<Leader>mc",
+      "ssc",
       function()
         require("oil").open_float(vim.fn.getcwd())
       end,
@@ -98,7 +98,7 @@ return {
       desc = "Open Float Oil (cwd)",
     },
     {
-      "<Leader>mp",
+      "ssp",
       function()
         require("oil").open_float(PineDir)
       end,
