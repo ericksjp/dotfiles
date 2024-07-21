@@ -3,11 +3,7 @@ local function GrepFiles(dir)
     no_ignore = false,
     hidden = true,
     cwd = dir,
-    mappings = {
-      i = {
-        ["<C-h>"] = require("telescope.actions").select_tab,
-      },
-    },
+    -- layout_config = { prompt_position = "top", width = 0.95, preview_width = 0.6 },
   })
 end
 
@@ -25,17 +21,10 @@ return {
     {
       "sh",
       function()
-        GrepFiles(vim.fn.expand("%:p:h"))
+        local dir = require("oil").get_current_dir() or vim.fn.expand("%:p:h")
+        GrepFiles(dir)
       end,
       desc = "Lists files in the Current Buffer dir, respects .gitignore",
-    },
-
-    {
-      "sk",
-      function()
-        GrepFiles(LazyVim.root())
-      end,
-      desc = "Lists files in your Root dir, respects .gitignore",
     },
 
     {
@@ -47,6 +36,14 @@ return {
     },
 
     {
+      "sk",
+      function()
+        GrepFiles(LazyVim.root())
+      end,
+      desc = "Lists files in your Root dir, respects .gitignore",
+    },
+
+    {
       "sl",
       function()
         GrepFiles(PineDir)
@@ -54,25 +51,13 @@ return {
       desc = "Lists files in Pined Directory, respects .gitignore",
     },
 
-    {
-      "sg",
-      function()
-        local builtin = require("telescope.builtin")
-        builtin.git_branches()
-      end,
-    },
-
-    {
-      "ss",
-      desc = "String Finder",
-    },
-
+    { "ss", "", desc = "Grep String", mode = { "n" } },
     {
       "ssh",
       function()
-        local builtin = require("telescope.builtin")
-        builtin.live_grep({
-          cwd = vim.fn.expand("%:p:h"),
+        require("telescope.builtin").live_grep({
+          cwd = require("oil").get_current_dir() or vim.fn.expand("%:p:h"),
+          -- layout_config = { prompt_position = "top", width = 0.95, preview_width = 0.6 },
         })
       end,
       desc = "Search for a string in your current Buffer directory and get results live as you type, respects .gitignore",
@@ -81,8 +66,7 @@ return {
     {
       "ssk",
       function()
-        local builtin = require("telescope.builtin")
-        builtin.live_grep({
+        require("telescope.builtin").live_grep({
           cwd = LazyVim.root(),
         })
       end,
@@ -92,8 +76,7 @@ return {
     {
       "ssj",
       function()
-        local builtin = require("telescope.builtin")
-        builtin.live_grep({
+        require("telescope.builtin").live_grep({
           cwd = vim.fn.getcwd(),
         })
       end,
@@ -101,15 +84,21 @@ return {
     },
 
     {
+      "ssl",
+      function()
+        require("telescope.builtin").live_grep({
+          cwd = PineDir,
+        })
+      end,
+      desc = "Search for a string in your Pine Dir and get results live as you type, respects .gitignore",
+    },
+
+    {
       "so",
       function()
-        local builtin = require("telescope.builtin")
-        builtin.buffers({
+        require("telescope.builtin").buffers({
           mappings = {
             i = {
-              ["<C-d>"] = require("telescope.actions").delete_buffer,
-            },
-            n = {
               ["<C-d>"] = require("telescope.actions").delete_buffer,
             },
           },
@@ -120,48 +109,79 @@ return {
     {
       "sq",
       function()
-        local builtin = require("telescope.builtin")
-        builtin.resume()
+        require("telescope.builtin").resume()
       end,
       desc = "Resume the previous telescope picker",
     },
     {
       "sd",
       function()
-        local builtin = require("telescope.builtin")
-        builtin.diagnostics()
+        require("telescope.builtin").diagnostics()
       end,
       desc = "Lists Diagnostics for all open buffers or a specific buffer",
     },
     {
       "se",
       function()
-        local builtin = require("telescope.builtin")
-        builtin.treesitter()
+        require("telescope.builtin").treesitter()
       end,
       desc = "Lists Function names, variables, from Treesitter",
+    },
+    {
+      "sn",
+      function()
+        require("telescope.builtin").current_buffer_fuzzy_find({
+          layout_config = {
+            preview_width = 0.3,
+          },
+        })
+      end,
+      desc = "Search in current buffer",
     },
   },
   config = function(_, opts)
     local telescope = require("telescope")
+    local actions = require("telescope.actions")
 
     opts.defaults = vim.tbl_deep_extend("force", opts.defaults, {
       wrap_results = true,
       layout_strategy = "horizontal",
-      layout_config = { prompt_position = "top" },
+      layout_config = { prompt_position = "top", width = 0.95 },
       sorting_strategy = "ascending",
       winblend = 0,
+      file_ignore_patterns = {
+        "^.git/",
+        "^node_modules/",
+      },
       mappings = {
         n = {
-          ["<c-d>"] = require("telescope.actions").delete_buffer,
+          ["<C-d>"] = actions.delete_buffer,
         }, -- n
         i = {
-          ["c-d>"] = require("telescope.actions").delete_buffer,
-          ["<c-t>"] = require("telescope.actions").select_tab,
+          ["<C-d>"] = actions.close,
+          ["<C-c>"] = false,
+          ["<c-t>"] = actions.select_tab,
+          ["<c-k>"] = actions.preview_scrolling_up,
+          ["<c-j>"] = actions.preview_scrolling_down,
+          ["<c-h>"] = actions.preview_scrolling_left,
+          ["<c-l>"] = actions.preview_scrolling_right,
         },
       },
     })
     opts.pickers = {
+      find_files = {
+        layout_config = { preview_width = 0.6 },
+      },
+      live_grep = {
+        layout_config = { preview_width = 0.5 },
+      },
+      buffers = {
+        mappings = {
+          i = {
+            ["<c-d>"] = actions.delete_buffer,
+          },
+        },
+      },
       diagnostics = {
         theme = "ivy",
         initial_mode = "normal",

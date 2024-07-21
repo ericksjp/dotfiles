@@ -35,3 +35,4 @@ vim.opt.list = true
 vim.opt.foldmethod = "manual"
 vim.opt.formatoptions:append({ "r" })
 vim.opt.termguicolors = true
+vim.g.oil_default_explorer = 1

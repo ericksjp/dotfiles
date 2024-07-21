@@ -5,6 +5,80 @@ local opts = { noremap = true, silent = true }
 keymap.set("n", "x", '"_x')
 keymap.set("n", ",", '"_')
 
+-- super super s
+keymap.set("n", "s", function()
+  require("which-key").show("s")
+end)
+
+opts.desc = "Save all"
+keymap.set("n", "<leader>za", ":wa<cr>", opts)
+opts.desc = "Save and quit"
+keymap.set("n", "<leader>zq", ":qa<cr>", opts)
+opts.desc = "Save and quit"
+keymap.set("n", "<leader>zx", ":wq<cr>", opts)
+opts.desc = "Save and quit"
+keymap.set("n", "<leader>zo", ":q!<cr>", opts)
+opts.desc = nil
+
+-- marks
+-- list marks
+keymap.set("n", "<leader>m", function()
+  local marks = vim.fn.execute("marks")
+  local alpha_marks = {}
+
+  for line in marks:gmatch("[^\r\n]+") do
+    local mark = line:match("^%s*([a-z])%s+")
+    if mark then
+      table.insert(alpha_marks, line)
+    end
+  end
+
+  require("fzf-lua").fzf_exec(alpha_marks, {
+    prompt = "Marks> ",
+    winopts = { height = 0.5, width = 0.5 },
+    previewer = false,
+    fzf_opts = {
+      ["--pointer"] = "|",
+    },
+    actions = {
+      ["default"] = function(selected)
+        local mark = selected[1]:sub(2, 2)
+        if mark then
+          vim.cmd("normal! g`" .. mark)
+        end
+      end,
+    },
+  })
+end, { desc = "List Marks" })
+-- go to mark
+keymap.set("n", "M", function()
+  local key = vim.fn.getchar()
+  local char = vim.fn.nr2char(key)
+
+  if char == "," then
+    return vim.cmd("normal! [`")
+  elseif char == "." then
+    return vim.cmd("normal! ]`")
+  end
+
+  vim.cmd("normal! g`" .. char)
+end)
+-- delete mark
+keymap.set("n", "dm", function()
+  local key = vim.fn.getchar()
+  local char = vim.fn.nr2char(key)
+
+  vim.cmd("delmark " .. char)
+end, { desc = "Delete Mark" })
+-- delete all marks
+keymap.set("n", "dM", ":delmarks a-z<CR>", { desc = "Delete All Marks" })
+
+-- toggle terminal
+keymap.set("n", "<c-\\>", function()
+  LazyVim.terminal(nil, { cwd = LazyVim.root() })
+end, { desc = "Terminal (Root Dir)" })
+keymap.set("t", "<c-\\>", "<cmd>close<cr>", { desc = "Hide Terminal" })
+
 -- line motions
 keymap.set("n", "yl", "0y$")
 keymap.set("n", "dl", "0d$")
@@ -23,14 +97,11 @@ keymap.set("n", "t", "@")
 -- Select all
 keymap.set("n", "<C-a>", "gg<S-v>G")
 
--- easy quotes
-keymap.set("i", "<C-q>", "'", opts)
-keymap.set("i", "<C-e>", '"', opts)
+keymap.set("i", "<C-f>", function()
+  require("flash").jump()
+end, opts)
 
--- Save file and quit
-keymap.set("n", "<Leader>wa", ":w<CR>")
-keymap.set("n", "<Leader>wA", ":wall<CR>")
-keymap.set("n", "<Leader>qw", ":sus<CR>", opts)
+keymap.set("n", "<C-c>", ":qa<CR>", opts)
 
 -- Tabs
 keymap.set("n", "<tab>", ":tabnext<Return>", opts)
@@ -43,26 +114,13 @@ keymap.set("n", "<leader>wv", ":vsplit<Return>", opts)
 keymap.set("n", "L", ":bnext<CR>", opts)
 keymap.set("n", "H", ":bprev<CR>", opts)
 
--- Navigate vim panes better
-keymap.set("n", "<C-l>", function()
-  require("tmux").move_left()
-end, opts)
-keymap.set("n", "<C-h>", function()
-  require("tmux").move_right()
-end, opts)
-keymap.set("n", "<C-j>", function()
-  require("tmux").move_bottom()
-end, opts)
-keymap.set("n", "<C-k>", function()
-  require("tmux").move_top()
-end, opts)
-
 -- enter the cmd easier
-keymap.set("n", "ç", ": <backspace>")
+keymap.set("n", "<C-x>", ": <backspace>")
+keymap.set("v", "<C-x>", ": <backspace>")
 
 -- move with through directories easier
-keymap.set("n", "nc", ":cd ")
-keymap.set("n", "nz", ":Z ")
+keymap.set("n", "çc", ":cd ")
+keymap.set("n", "çs", ":Z ")
 
 -- delete all buffers
 keymap.set("n", "<Leader>ba", function()
@@ -88,57 +146,3 @@ keymap.set("n", "<Leader>cw", function()
   ChangeWithCWD = not ChangeWithCWD
   print("ChangeWithCWD =", ChangeWithCWD)
 end, opts)
-
--- easier spectre
-local function spectreOpen(dir)
-  require("spectre").open({
-    is_insert_mode = true,
-    cwr = dir,
-    search_text = vim.fn.expand("<cword>"),
-  })
-  vim.defer_fn(function()
-    vim.cmd("5")
-  end, 100)
-end
-
-vim.keymap.set("n", "<leader>rc", function()
-  spectreOpen(vim.fn.getcwd())
-end)
-
-vim.keymap.set("n", "<leader>rr", function()
-  spectreOpen(LazyVim.root)
-end)
-
-vim.keymap.set("n", "<leader>rb", function()
-  spectreOpen(vim.fn.expand("%:p:h"))
-end)
-
-vim.keymap.set("n", "<leader>rp", function()
-  spectreOpen(PineDir)
-end)
-
--- git helpers
-vim.keymap.set("n", "<Leader>jn", ":Neogit<CR>", { silent = true, noremap = true, desc = "Open Neogit" })
-vim.keymap.set("n", "<Leader>jc", ":Neogit commit<CR>", { silent = true, noremap = true, desc = "Commit changes" })
-vim.keymap.set("n", "<Leader>jp", ":Neogit pull<CR>", { silent = true, noremap = true, desc = "Pull changes" })
-vim.keymap.set("n", "<Leader>je", ":Neogit push<CR>", { silent = true, noremap = true, desc = "Push changes" })
-
-vim.keymap.set("n", "<Leader>kc", function()
-  require("telescope.builtin").git_commits({
-    layout_strategy = "horizontal",
-    layout_config = {
-      width = 0.99,
-      preview_width = 0.6,
-    },
-  })
-end, { silent = true, noremap = true, desc = "List commits" })
-
-vim.keymap.set("n", "<Leader>kb", function()
-  require("telescope.builtin").git_branches({
-    layout_strategy = "horizontal",
-    layout_config = {
-      width = 0.99,
-      preview_width = 0.6,
-    },
-  })
-end, { silent = true, noremap = true, desc = "List branches" })

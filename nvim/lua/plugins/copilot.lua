@@ -28,17 +28,21 @@ return {
     config = function()
       require("copilot").setup({
         panel = {
-          enabled = true,
-          auto_refresh = true,
+          enabled = false,
+          auto_refresh = false,
         },
         suggestion = {
           enabled = true,
-          auto_trigger = true,
+          auto_trigger = false,
+          hide_during_completion = true,
+          debounce = 75,
+
           keymap = {
+            -- auto_trigger = "<C-J>",
             accept = "<C-J>",
-            next = "<C-N>",
-            prev = "<C-P>",
-            dismiss = "<C-D>",
+            next = "<C-D>",
+            prev = "<C-A>",
+            dismiss = "<C-L>",
           },
         },
       })
@@ -141,10 +145,11 @@ return {
           selection = select.visual,
           window = {
             layout = "float",
-            relative = "cursor",
-            width = 1,
-            height = 0.4,
-            row = 1,
+            relative = "editor",
+            width = 0.8,
+            height = 0.8,
+            winblend = 0, -- Set the transparency to 50%
+            -- row = 1,
           },
         })
       end, { nargs = "*", range = true })
@@ -168,24 +173,30 @@ return {
           end
         end,
       })
-
-      -- Add which-key mappings
-      local wk = require("which-key")
-      wk.register({
-        g = {
-          m = {
-            name = "+Copilot Chat",
-            d = "Show diff",
-            p = "System prompt",
-            s = "Show selection",
-            y = "Yank diff",
-          },
-        },
-      })
     end,
     event = "VeryLazy",
     keys = {
+      {
+        "<C-o>",
+        function()
+          vim.cmd("CopilotChatVisual")
+          vim.api.nvim_feedkeys("i", "n", false)
+        end,
+        mode = "n",
+        desc = "CopilotChat - Open in vertical split",
+      },
+      {
+        "<C-u>",
+        function()
+          vim.cmd("CopilotChatInline")
+          vim.api.nvim_feedkeys("i", "n", false)
+        end,
+        mode = "n",
+        desc = "CopilotChat - Inline chat",
+      },
+
       -- Show help actions with telescope
+      { "<leader>a", "", desc = "+ai", mode = { "n", "v" } },
       {
         "<leader>ah",
         function()
@@ -215,19 +226,6 @@ return {
       { "<leader>ar", "<cmd>CopilotChatReview<cr>", desc = "CopilotChat - Review code" },
       { "<leader>aR", "<cmd>CopilotChatRefactor<cr>", desc = "CopilotChat - Refactor code" },
       { "<leader>an", "<cmd>CopilotChatBetterNamings<cr>", desc = "CopilotChat - Better Naming" },
-      -- Chat with Copilot in visual mode
-      {
-        "<leader>av",
-        ":CopilotChatVisual",
-        mode = "x",
-        desc = "CopilotChat - Open in vertical split",
-      },
-      {
-        "<leader>ax",
-        ":CopilotChatInline<cr>",
-        mode = "x",
-        desc = "CopilotChat - Inline chat",
-      },
       -- Custom input for CopilotChat
       {
         "<leader>ai",

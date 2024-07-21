@@ -9,10 +9,10 @@ return {
       keymaps = {
         ["g?"] = "actions.show_help",
         ["<CR>"] = "actions.select",
-        ["vv"] = "actions.select_vsplit",
-        ["ss"] = "actions.select_split",
+        -- ["vv"] = "actions.select_vsplit",
+        -- ["ss"] = "actions.select_split",
         ["<C-t>"] = "actions.select_tab",
-        ["<C-p>"] = "actions.preview",
+        ["<C-i>"] = "actions.preview",
         ["q"] = "actions.close",
         ["<C-y>"] = "actions.refresh",
         ["e"] = "actions.parent",
@@ -73,37 +73,37 @@ return {
       silent = true,
       desc = "Open Oil (PineDir)",
     },
-    {
-      "ssb",
-      function()
-        require("oil").open_float()
-      end,
-      silent = true,
-      desc = "Open Float Oil (Current Buffer dir)",
-    },
-    {
-      "ssr",
-      function()
-        require("oil").open_float(LazyVim.root())
-      end,
-      silent = true,
-      desc = "Open Float Oil (Root dir)",
-    },
-    {
-      "ssc",
-      function()
-        require("oil").open_float(vim.fn.getcwd())
-      end,
-      silent = true,
-      desc = "Open Float Oil (cwd)",
-    },
-    {
-      "ssp",
-      function()
-        require("oil").open_float(PineDir)
-      end,
-      silent = true,
-      desc = "Open Float Oil (PineDir)",
-    },
+    -- {
+    --   "ssb",
+    --   function()
+    --     require("oil").open_float()
+    --   end,
+    --   silent = true,
+    --   desc = "Open Float Oil (Current Buffer dir)",
+    -- },
+    -- {
+    --   "ssr",
+    --   function()
+    --     require("oil").open_float(LazyVim.root())
+    --   end,
+    --   silent = true,
+    --   desc = "Open Float Oil (Root dir)",
+    -- },
+    -- {
+    --   "ssc",
+    --   function()
+    --     require("oil").open_float(vim.fn.getcwd())
+    --   end,
+    --   silent = true,
+    --   desc = "Open Float Oil (cwd)",
+    -- },
+    -- {
+    --   "ssp",
+    --   function()
+    --     require("oil").open_float(PineDir)
+    --   end,
+    --   silent = true,
+    --   desc = "Open Float Oil (PineDir)",
+    -- },
   },
 }

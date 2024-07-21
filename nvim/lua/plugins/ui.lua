@@ -1,25 +1,39 @@
 return {
   {
-    "lukas-reineke/indent-blankline.nvim",
-    enabled = false,
-  },
-  {
-    "echasnovski/mini.indentscope",
-    enabled = false,
-  },
-  {
-    "nvimdev/dashboard-nvim",
-    enabled = false,
-  },
-  {
     "nvim-lualine/lualine.nvim",
     config = function()
       require("lualine").setup({
         options = {
           icons_enabled = true,
-          theme = "vscode",
           component_separators = { left = "-", right = "-" },
           section_separators = { left = "", right = "" },
+        },
+        sections = {
+          lualine_a = {
+            {
+              "mode",
+              padding = { left = 0 },
+              color = { fg = "none", bg = "none", gui = "bold" },
+            },
+          },
+          lualine_b = { "branch" },
+          lualine_c = { "filename" },
+          lualine_x = {
+            function()
+              local reg = vim.fn.reg_recording()
+              if reg == "" then
+                return ""
+              end
+              return "recording @" .. reg
+            end,
+          },
+          lualine_y = { { "progress", color = { fg = "none", bg = "none" } } },
+          lualine_z = {
+            {
+              "location",
+              color = { fg = "none", bg = "none", gui = "bold" },
+            },
+          },
         },
       })
     end,

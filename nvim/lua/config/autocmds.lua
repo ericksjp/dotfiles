@@ -1,49 +1,6 @@
-function IsRecording()
-  local reg = vim.fn.reg_recording()
-  if reg == "" then
-    return ""
-  end
-  return "recording @" .. reg
-end
-
-local function lualine_options(fg_color)
-  return {
-    sections = {
-      lualine_a = {
-        {
-          "mode",
-          padding = { left = 1 },
-          color = { fg = fg_color, bg = "none", gui = "bold" },
-        },
-      },
-      lualine_b = { "branch" },
-      lualine_c = { "filename" },
-      lualine_x = { "IsRecording()" },
-      lualine_y = { { "progress", color = { fg = fg_color } } },
-      lualine_z = {
-        {
-          "location",
-          color = { fg = fg_color, bg = "none", gui = "bold" },
-        },
-      },
-    },
-  }
-end
-
-local function SET_COLORSCHEME()
-  if vim.o.background == "dark" then
-    vim.cmd("colorscheme mellifluous")
-    require("lualine").setup(lualine_options("#ffffff"))
-  else
-    vim.cmd("colorscheme vscode")
-    require("lualine").setup(lualine_options("#000000"))
-  end
-end
-
 vim.api.nvim_create_autocmd("VimEnter", {
   pattern = "*",
   callback = function()
-    SET_COLORSCHEME()
     local arg = vim.fn.argv(0)
     if arg == "." then
       vim.defer_fn(function()
@@ -72,11 +29,6 @@ vim.api.nvim_create_autocmd("DirChanged", {
       end
     end
   end,
-})
-
-vim.api.nvim_create_autocmd("OptionSet", {
-  pattern = "background",
-  callback = SET_COLORSCHEME,
 })
 
 vim.api.nvim_create_autocmd("LspAttach", {
