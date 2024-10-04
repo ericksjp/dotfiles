@@ -3,7 +3,7 @@ return {
   config = function()
     require("colorscheme-file").setup({
       path = vim.fn.stdpath("config") .. "/colorscheme-file.txt",
-      fallback = "vscode",
+      fallback = "dark",
       silent = true,
     })
   end,

@@ -12,50 +12,79 @@ return {
     })
   end,
   keys = function()
-    local function spectreOpen(dir)
+    local function spectreOpen(dir, text)
+      text = text or vim.fn.expand("<cword>")
       require("spectre").open({
         is_insert_mode = true,
         cwr = dir,
-        search_text = vim.fn.expand("<cword>"),
+        search_text = text,
       })
+
       vim.defer_fn(function()
         vim.cmd("5")
+        local buffrn = vim.api.nvim_get_current_buf()
+        vim.keymap.set("i", "<c-j>", function()
+          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<esc><c-j>", true, false, true), "m", true)
+        end, { buffer = buffrn })
       end, 100)
     end
 
-    return {
+    local function getVText()
+      vim.cmd("normal! y")
+      return vim.fn.getreg('"')
+    end
 
-      ["<leader>rc"] = { spectreOpen, "Spectre - Current directory" },
-      ["<leader>rr"] = {
+    -- Mapeamento para o modo visual usando a função criada
+    vim.keymap.set("v", "<leader>rc", function()
+      spectreOpen(vim.fn.getcwd(), getVText())
+    end, { desc = "Search on current directory" })
+
+    return {
+      {
+        "<leader>rc",
+        function()
+          spectreOpen(vim.fn.getcwd())
+        end,
+        desc = "Spectre - Current directory",
+      },
+      {
+        "<leader>rr",
         function()
           spectreOpen(LazyVim.root)
         end,
-        "Spectre - Root directory",
+        desc = "Spectre - Root directory",
       },
-      ["<leader>rb"] = {
+      {
+        "<leader>rb",
         function()
           spectreOpen(vim.fn.expand("%:p:h"))
         end,
-        "Spectre - Buffer directory",
+        desc = "Spectre - Buffer directory",
       },
-      ["<leader>rp"] = {
+
+      {
+        "<leader>rc",
         function()
-          spectreOpen(PineDir)
+          spectreOpen(vim.fn.getcwd(), getVText())
         end,
-        "Spectre - Pine directory",
+        mode = "v",
+        desc = "Spectre - Current directory (visual)",
       },
-      ["<leader>rn"] = {
+      {
+        "<leader>rr",
         function()
-          local word = vim.fn.expand("<cword>")
-          vim.ui.input({ prompt = "Replace " .. word .. " with: " }, function(sub)
-            if sub then
-              vim.cmd("%s/\\v" .. vim.fn.expand("<cword>") .. "/" .. sub .. "/g")
-            else
-              print("No input provided")
-            end
-          end)
+          spectreOpen(LazyVim.root, getVText())
         end,
-        "Spectre - Replace word",
+        mode = "v",
+        desc = "Spectre - Root directory (visual)",
+      },
+      {
+        "<leader>rb",
+        function()
+          spectreOpen(vim.fn.expand("%:p:h"), getVText())
+        end,
+        mode = "v",
+        desc = "Spectre - Buffer directory (visual)",
       },
     }
   end,

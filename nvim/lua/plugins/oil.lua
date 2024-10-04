@@ -1,6 +1,8 @@
+local detail = false
+
 return {
   "stevearc/oil.nvim",
-  dependencies = { "nvim-tree/nvim-web-devicons" },
+  -- dependencies = { "nvim-tree/nvim-web-devicons" },
   config = function()
     require("oil").setup({
       default_file_explorer = true,
@@ -9,48 +11,39 @@ return {
       keymaps = {
         ["g?"] = "actions.show_help",
         ["<CR>"] = "actions.select",
-        -- ["vv"] = "actions.select_vsplit",
-        -- ["ss"] = "actions.select_split",
+        -- ["wv"] = "actions.select_vsplit",
+        -- ["wj"] = "actions.select_split",
         ["<C-t>"] = "actions.select_tab",
-        ["<C-i>"] = "actions.preview",
+        ["<C-ç>"] = "actions.preview",
         ["q"] = "actions.close",
         ["<C-y>"] = "actions.refresh",
         ["e"] = "actions.parent",
         ["´"] = "actions.open_cwd",
-        ["<C-n>"] = "actions.cd",
+        -- ["<C-n>"] = "actions.cd",
         ["<C-b>"] = "actions.tcd",
         ["gs"] = "actions.change_sort",
         ["gx"] = "actions.open_external",
         ["H"] = "actions.toggle_hidden",
         ["g\\"] = "actions.toggle_trash",
+        ["K"] = {
+          desc = "Toggle file and details",
+          callback = function()
+            detail = not detail
+            if detail then
+              require("oil").set_columns({ "icon", "permissions", "size", "mtime" })
+            else
+              require("oil").set_columns({ "icon" })
+            end
+          end,
+        },
       },
       use_default_keymaps = false,
-      float = {
-        padding = 0,
-        max_width = 70,
-        max_height = 40,
-        border = "rounded",
-        win_options = {
-          winblend = 0,
-        },
-        override = function(conf)
-          return conf
-        end,
-      },
     })
   end,
 
   keys = {
     {
-      "sb",
-      function()
-        require("oil").open()
-      end,
-      silent = true,
-      desc = "Open Oil (Current Buffer dir)",
-    },
-    {
-      "sr",
+      "<leader><leader>",
       function()
         require("oil").open(LazyVim.root())
       end,
@@ -58,7 +51,7 @@ return {
       desc = "Open Oil (Root dir)",
     },
     {
-      "sc",
+      "<leader>e",
       function()
         require("oil").open(vim.fn.getcwd())
       end,
@@ -66,44 +59,28 @@ return {
       desc = "Open Oil (cwd)",
     },
     {
-      "sp",
+      "<leader>o",
       function()
-        require("oil").open(PineDir)
+        require("oil").open(vim.fn.expand("%:p:h"))
+      end,
+      silent = true,
+      desc = "Open Oil (Current Buffer dir)",
+    },
+    {
+      "<leader>fe",
+      function()
+        require("oil").open(require("utils.pineDir").getPineDir())
       end,
       silent = true,
       desc = "Open Oil (PineDir)",
     },
-    -- {
-    --   "ssb",
-    --   function()
-    --     require("oil").open_float()
-    --   end,
-    --   silent = true,
-    --   desc = "Open Float Oil (Current Buffer dir)",
-    -- },
-    -- {
-    --   "ssr",
-    --   function()
-    --     require("oil").open_float(LazyVim.root())
-    --   end,
-    --   silent = true,
-    --   desc = "Open Float Oil (Root dir)",
-    -- },
-    -- {
-    --   "ssc",
-    --   function()
-    --     require("oil").open_float(vim.fn.getcwd())
-    --   end,
-    --   silent = true,
-    --   desc = "Open Float Oil (cwd)",
-    -- },
-    -- {
-    --   "ssp",
-    --   function()
-    --     require("oil").open_float(PineDir)
-    --   end,
-    --   silent = true,
-    --   desc = "Open Float Oil (PineDir)",
-    -- },
+    {
+      "<leader>fn",
+      function()
+        require("oil").open("~/notes")
+      end,
+      silent = true,
+      desc = "Open notes",
+    },
   },
 }

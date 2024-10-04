@@ -1,47 +1,8 @@
 return {
-  {
-    "nvim-lualine/lualine.nvim",
-    config = function()
-      require("lualine").setup({
-        options = {
-          icons_enabled = true,
-          component_separators = { left = "-", right = "-" },
-          section_separators = { left = "", right = "" },
-        },
-        sections = {
-          lualine_a = {
-            {
-              "mode",
-              padding = { left = 0 },
-              color = { fg = "none", bg = "none", gui = "bold" },
-            },
-          },
-          lualine_b = { "branch" },
-          lualine_c = { "filename" },
-          lualine_x = {
-            function()
-              local reg = vim.fn.reg_recording()
-              if reg == "" then
-                return ""
-              end
-              return "recording @" .. reg
-            end,
-          },
-          lualine_y = { { "progress", color = { fg = "none", bg = "none" } } },
-          lualine_z = {
-            {
-              "location",
-              color = { fg = "none", bg = "none", gui = "bold" },
-            },
-          },
-        },
-      })
-    end,
-  },
-
   -- messages, cmdline and the popupmenu
   {
     "folke/noice.nvim",
+    enabled = true,
     opts = function(_, opts)
       table.insert(opts.routes, {
         filter = {
@@ -111,6 +72,7 @@ return {
       }
 
       opts.cmdline = {
+        enabled = false,
         view = "cmdline", -- view for rendering the cmdline. Change to `cmdline` to get a classic cmdline at the bottom
         format = {
           cmdline = {
@@ -135,7 +97,12 @@ return {
       }
 
       opts.popupmenu = {
+        enabled = true,
         backend = "cmp",
+      }
+
+      opts.messages = {
+        enabled = false,
       }
 
       opts.commands = {
@@ -150,6 +117,7 @@ return {
   },
   {
     "rcarriga/nvim-notify",
+    enabled = false,
     opts = {
       timeout = 2000,
       fps = 120,

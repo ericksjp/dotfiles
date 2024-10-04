@@ -1,5 +1,17 @@
 return {
   {
+    "echasnovski/mini.comment",
+    enabled = false,
+  },
+  {
+    "iamcco/markdown-preview.nvim",
+    enabled = false,
+  },
+  {
+    "folke/flash.nvim",
+    enabled = false,
+  },
+  {
     "MagicDuck/grug-far.nvim",
     enabled = false,
   },

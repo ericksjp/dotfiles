@@ -1,148 +1,140 @@
-local keymap = vim.keymap
+local map = vim.keymap.set
 local opts = { noremap = true, silent = true }
+local marks = require("utils.marks")
+-- require("utils.discipline"):cowboy()
 
 -- delete without copy
-keymap.set("n", "x", '"_x')
-keymap.set("n", ",", '"_')
+map("n", "x", '"_x')
+map("n", ",", '"_')
+map("n", "<esc>", "<esc>:noh<cr>", opts)
+
+map("n", "n", "nzz", opts)
 
 -- super super s
-keymap.set("n", "s", function()
+map("n", "s", function()
   require("which-key").show("s")
 end)
 
-opts.desc = "Save all"
-keymap.set("n", "<leader>za", ":wa<cr>", opts)
-opts.desc = "Save and quit"
-keymap.set("n", "<leader>zq", ":qa<cr>", opts)
-opts.desc = "Save and quit"
-keymap.set("n", "<leader>zx", ":wq<cr>", opts)
-opts.desc = "Save and quit"
-keymap.set("n", "<leader>zo", ":q!<cr>", opts)
-opts.desc = nil
-
 -- marks
--- list marks
-keymap.set("n", "<leader>m", function()
-  local marks = vim.fn.execute("marks")
-  local alpha_marks = {}
+map("n", "<leader>m", function()
+  marks.listMarks()
+end, { desc = "List Marks" })
+map("n", "m", function()
+  marks.goToMark()
+end, { desc = "Go to Mark" })
+map("n", "dm", function()
+  marks.deleteMark()
+end, { desc = "Delete Mark" })
+map("n", "dM", ":delmarks a-z<CR>", { desc = "Delete All Marks" })
+map("n", "M", function()
+  marks.putMark()
+end, { desc = "Put Mark" })
 
-  for line in marks:gmatch("[^\r\n]+") do
-    local mark = line:match("^%s*([a-z])%s+")
-    if mark then
-      table.insert(alpha_marks, line)
-    end
-  end
-
-  require("fzf-lua").fzf_exec(alpha_marks, {
-    prompt = "Marks> ",
-    winopts = { height = 0.5, width = 0.5 },
-    previewer = false,
-    fzf_opts = {
-      ["--pointer"] = "|",
-    },
-    actions = {
-      ["default"] = function(selected)
-        local mark = selected[1]:sub(2, 2)
-        if mark then
-          vim.cmd("normal! g`" .. mark)
-        end
-      end,
+local function openTer(path)
+  require("lazy.util").float_term(nil, {
+    backdrop = nil,
+    cwd = path,
+    border = "single",
+    style = "minimal",
+    size = {
+      width = 0.5,
+      height = 0.5,
     },
   })
-end, { desc = "List Marks" })
--- go to mark
-keymap.set("n", "M", function()
-  local key = vim.fn.getchar()
-  local char = vim.fn.nr2char(key)
+end
 
-  if char == "," then
-    return vim.cmd("normal! [`")
-  elseif char == "." then
-    return vim.cmd("normal! ]`")
-  end
-
-  vim.cmd("normal! g`" .. char)
-end)
--- delete mark
-keymap.set("n", "dm", function()
-  local key = vim.fn.getchar()
-  local char = vim.fn.nr2char(key)
-
-  vim.cmd("delmark " .. char)
-end, { desc = "Delete Mark" })
--- delete all marks
-keymap.set("n", "dM", ":delmarks a-z<CR>", { desc = "Delete All Marks" })
-
--- toggle terminal
-keymap.set("n", "<c-\\>", function()
-  LazyVim.terminal(nil, { cwd = LazyVim.root() })
+map("n", "<c-\\>", function()
+  openTer(LazyVim.root())
 end, { desc = "Terminal (Root Dir)" })
-keymap.set("t", "<c-\\>", "<cmd>close<cr>", { desc = "Hide Terminal" })
+
+map("n", "<c-q>", function()
+  local path = require("oil").get_current_dir() or vim.fn.expand("%:p:h")
+  openTer(path)
+end, { desc = "Terminal (Buffer Dir)" })
+
+map("t", "<c-\\>", "<cmd>close<cr>", { desc = "Hide Terminal" })
 
 -- line motions
-keymap.set("n", "yl", "0y$")
-keymap.set("n", "dl", "0d$")
-keymap.set("n", "cl", "0c$")
+map("n", "yl", "0y$")
+map("n", "dl", "0d$")
+map("n", "cl", "0c$")
 
 -- Increment/decrement
-keymap.set("n", "+", "<C-a>")
-keymap.set("n", "-", "<C-x>")
+map({ "n", "v" }, "+", "<C-a>")
+map({ "n", "v" }, "-", "<C-x>")
+
+map("v", "<C-a>", "")
+map("v", "<C-b>", "")
 
 -- easier search
-keymap.set("n", "\\", "/")
+map("n", "\\", "/")
 
 -- easier actions
-keymap.set("n", "t", "@")
+map("n", "t", "@")
 
 -- Select all
-keymap.set("n", "<C-a>", "gg<S-v>G")
+map("n", "<C-a>", "gg<S-v>G")
 
-keymap.set("i", "<C-f>", function()
-  require("flash").jump()
-end, opts)
+map("i", "<C-f>", "<Right>", opts)
+map("i", "<C-b>", "<left>", opts)
 
-keymap.set("n", "<C-c>", ":qa<CR>", opts)
+-- easier escape
+map("n", "<C-c>", ":qa<CR>", opts)
 
 -- Tabs
-keymap.set("n", "<tab>", ":tabnext<Return>", opts)
+map("n", "<leader><tab><tab>", ':tabnew vim.fn.expand("%:p")<Return>', opts)
+map("n", "<leader><tab>n", ":tabnext<Return>", opts)
+map("n", "<leader><tab>p", ":tabprev<Return>", opts)
+
+-- window size
+map("n", "(", ":res +1<Return>", opts)
+map("n", ")", ":res -1<Return>", opts)
 
 -- Split window
-keymap.set("n", "<leader>wh", ":split<Return>", opts)
-keymap.set("n", "<leader>wv", ":vsplit<Return>", opts)
-
--- navigate through buffers
-keymap.set("n", "L", ":bnext<CR>", opts)
-keymap.set("n", "H", ":bprev<CR>", opts)
-
--- enter the cmd easier
-keymap.set("n", "<C-x>", ": <backspace>")
-keymap.set("v", "<C-x>", ": <backspace>")
+map("n", "<leader>wj", ":split<Return>", opts)
+map("n", "<leader>wl", ":vsplit<Return>", opts)
 
 -- move with through directories easier
-keymap.set("n", "çc", ":cd ")
-keymap.set("n", "çs", ":Z ")
+map("n", "sz", ":Z ", { desc = "Zoxide" })
 
 -- delete all buffers
-keymap.set("n", "<Leader>ba", function()
-  vim.cmd("%bd")
+map("n", "<Leader>ba", ":%bd<CR>", opts)
+
+-- -- set the pine directory
+map("n", "<leader>p", function()
+  local path = require("oil").get_current_dir() or vim.fn.expand("%:p:h")
+  require("utils.pineDir").setPineDir(path)
 end, opts)
 
--- set the pine directory
-PineDir = "/home/erick/"
-local function SetPineDir()
-  if require("oil").get_current_dir() then
-    PineDir = require("oil").get_current_dir()
-  else
-    PineDir = vim.fn.expand("%:p:h")
-  end
+map("n", "<c-b>", function()
+  vim.fn.chdir(vim.fn.expand("%:p:h"))
+  print(vim.fn.getcwd())
+end, { desc = "Set CWD to Buffer Directory" })
 
-  print("PineDirectory =", PineDir)
-end
-keymap.set("n", "<Leader>pd", SetPineDir, opts)
+-- string replace
+map("n", "<leader>rw", ":%s/<C-r>=expand('<cword>')<CR>//g<Left><Left>", { desc = "Replace Word" })
+map("n", "<leader>ra", ":%s/<C-r>=expand('<cword>')<CR>/&/g<Left><Left>", { desc = "Append in Word" })
+map("n", "<leader>ri", ":%s/<C-r>=expand('<cword>')<CR>/&/g<Left><Left><Left>", { desc = "Insert in Word" })
 
--- change cwd with oil
-ChangeWithCWD = true
-keymap.set("n", "<Leader>cw", function()
-  ChangeWithCWD = not ChangeWithCWD
-  print("ChangeWithCWD =", ChangeWithCWD)
-end, opts)
+map("v", "<leader>rw", 'y:%s/<C-r><C-r>"//g<Left><Left>', { desc = "Replace Selection" })
+map("v", "<leader>ra", 'y:%s/<C-r><C-r>"/&/g<Left><Left>', { desc = "Append In Selection" })
+map("v", "<leader>ri", 'y:%s/<C-r><C-r>"/&/g<Left><Left><Left>', { desc = "Insert In Selection" })
+map("v", "<leader>rs", ":s//g<Left><Left>", { desc = "Replace In Selection" })
+
+map("c", "<C-f>", function()
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<right>", true, false, true), "m", true)
+end, { noremap = true })
+
+map("c", "<C-b>", function()
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<left>", true, false, true), "m", true)
+end, { noremap = true })
+
+map("c", "<C-a>", function()
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Home>", true, false, true), "m", true)
+end, { noremap = true })
+
+-- save and source
+map("n", "<leader>S", ":w<CR>:source %<CR>", opts)
+
+map("n", "<leader>N", ":R ")
+map("n", "<leader>M", ":M ")

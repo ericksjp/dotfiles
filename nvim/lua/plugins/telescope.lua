@@ -1,8 +1,9 @@
-local function GrepFiles(dir)
+local function GrepFiles(dir, name)
   require("telescope.builtin").find_files({
     no_ignore = false,
     hidden = true,
     cwd = dir,
+    prompt_title = "Find Files (" .. name .. ")",
     -- layout_config = { prompt_position = "top", width = 0.95, preview_width = 0.6 },
   })
 end
@@ -19,62 +20,44 @@ return {
   },
   keys = {
     {
-      "sh",
+      "ss",
       function()
-        local dir = require("oil").get_current_dir() or vim.fn.expand("%:p:h")
-        GrepFiles(dir)
+        GrepFiles(vim.fn.getcwd(), "CWD")
       end,
-      desc = "Lists files in the Current Buffer dir, respects .gitignore",
+      desc = "Find files (cwd)",
+    },
+    {
+      "s<leader>",
+      function()
+        GrepFiles(LazyVim.root(), "Root Dir")
+      end,
+      desc = "List files (Root Dir)",
+    },
+    {
+      "sb",
+      function()
+        local bufname = require("oil").get_current_dir() or vim.fn.expand("%:p:h")
+        GrepFiles(bufname, "Buffer Dir")
+      end,
+      desc = "Find files (buffer dir)",
+    },
+    {
+      "sp",
+      function()
+        GrepFiles(require("utils.pineDir").getPineDir(), "Pine Dir")
+      end,
+      desc = "List files (Pine Dir)",
+    },
+    {
+      "sn",
+      function()
+        GrepFiles("~/notes", "Buffer Dir")
+      end,
+      desc = "Find files (Notes dir)",
     },
 
     {
-      "sj",
-      function()
-        GrepFiles(vim.fn.getcwd())
-      end,
-      desc = "Lists files in your CWD, respects .gitignore",
-    },
-
-    {
-      "sk",
-      function()
-        GrepFiles(LazyVim.root())
-      end,
-      desc = "Lists files in your Root dir, respects .gitignore",
-    },
-
-    {
-      "sl",
-      function()
-        GrepFiles(PineDir)
-      end,
-      desc = "Lists files in Pined Directory, respects .gitignore",
-    },
-
-    { "ss", "", desc = "Grep String", mode = { "n" } },
-    {
-      "ssh",
-      function()
-        require("telescope.builtin").live_grep({
-          cwd = require("oil").get_current_dir() or vim.fn.expand("%:p:h"),
-          -- layout_config = { prompt_position = "top", width = 0.95, preview_width = 0.6 },
-        })
-      end,
-      desc = "Search for a string in your current Buffer directory and get results live as you type, respects .gitignore",
-    },
-
-    {
-      "ssk",
-      function()
-        require("telescope.builtin").live_grep({
-          cwd = LazyVim.root(),
-        })
-      end,
-      desc = "Search for a string in your Root Dir and get results live as you type, respects .gitignore",
-    },
-
-    {
-      "ssj",
+      "sff",
       function()
         require("telescope.builtin").live_grep({
           cwd = vim.fn.getcwd(),
@@ -82,17 +65,28 @@ return {
       end,
       desc = "Search for a string in your CWD and get results live as you type, respects .gitignore",
     },
-
     {
-      "ssl",
+      "sf<leader>",
       function()
         require("telescope.builtin").live_grep({
-          cwd = PineDir,
+          cwd = LazyVim.root(),
         })
       end,
-      desc = "Search for a string in your Pine Dir and get results live as you type, respects .gitignore",
+      desc = "Search for a string in your Root Dir and get results live as you type, respects .gitignore",
     },
-
+    {
+      "sfb",
+      function()
+        local bufname = vim.fn.expand("%:p:h")
+        if bufname:match("^oil://*") ~= nil then
+          bufname = require("oil").get_current_dir() .. ""
+        end
+        require("telescope.builtin").live_grep({
+          cwd = bufname,
+        })
+      end,
+      desc = "Search for a string in your current Buffer directory and get results live as you type, respects .gitignore",
+    },
     {
       "so",
       function()
@@ -107,7 +101,7 @@ return {
       desc = "Lists open buffers",
     },
     {
-      "sq",
+      "sr",
       function()
         require("telescope.builtin").resume()
       end,
@@ -121,22 +115,27 @@ return {
       desc = "Lists Diagnostics for all open buffers or a specific buffer",
     },
     {
-      "se",
+      "sl",
       function()
         require("telescope.builtin").treesitter()
       end,
       desc = "Lists Function names, variables, from Treesitter",
     },
     {
-      "sn",
+      "sy",
       function()
-        require("telescope.builtin").current_buffer_fuzzy_find({
-          layout_config = {
-            preview_width = 0.3,
-          },
+        require("telescope.builtin").lsp_document_symbols({
+          symbols = LazyVim.config.get_kind_filter(),
         })
       end,
-      desc = "Search in current buffer",
+      desc = "Goto Symbol",
+    },
+    {
+      "sm",
+      function()
+        require("telescope.builtin").lsp_document_symbols({})
+      end,
+      desc = "Lists all symbols in the current buffer",
     },
   },
   config = function(_, opts)
@@ -146,7 +145,7 @@ return {
     opts.defaults = vim.tbl_deep_extend("force", opts.defaults, {
       wrap_results = true,
       layout_strategy = "horizontal",
-      layout_config = { prompt_position = "top", width = 0.95 },
+      layout_config = { prompt_position = "top" },
       sorting_strategy = "ascending",
       winblend = 0,
       file_ignore_patterns = {
@@ -170,10 +169,10 @@ return {
     })
     opts.pickers = {
       find_files = {
-        layout_config = { preview_width = 0.6 },
+        layout_config = { preview_width = 0, width = 0.5 },
       },
       live_grep = {
-        layout_config = { preview_width = 0.5 },
+        layout_config = { preview_width = 0.6 },
       },
       buffers = {
         mappings = {

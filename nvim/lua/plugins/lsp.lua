@@ -1,6 +1,6 @@
 ---@diagnostic disable: missing-fields
 return {
-  -- tools
+
   {
     "williamboman/mason.nvim",
     opts = function(_, opts)
@@ -8,11 +8,12 @@ return {
         "luacheck",
         "shellcheck",
         "shfmt",
-        "tailwindcss-language-server",
-        "typescript-language-server",
+        -- "tailwindcss-language-server",
+        -- "typescript-language-server",
         "css-lsp",
+        "emmet-language-server",
         "jdtls",
-        -- "clangd",
+        "clangd",
       })
     end,
   },
@@ -24,24 +25,59 @@ return {
       inlay_hints = { enabled = false },
       ---@type lspconfig.options
       servers = {
-        -- clangd = {},
-        jdtls = {
-          root_dir = function(...)
-            return require("lspconfig.util").root_pattern("pom.xml", ".git")(...)
-          end,
-          -- handlers = {
-          -- 	["$/progress"] = function() end,
-          -- },
+        emmet_language_server = {
+          filetypes = {
+            -- "css",
+            "eruby",
+            "html",
+            -- "javascript",
+            "javascriptreact",
+            "less",
+            "sass",
+            "scss",
+            "pug",
+            "typescriptreact",
+          },
+          init_options = {
+            includeLanguages = {},
+            excludeLanguages = {},
+            extensionsPath = {},
+            preferences = {},
+            showAbbreviationSuggestions = true,
+            showExpandedAbbreviation = "always",
+            showSuggestionsAsSnippets = false,
+            syntaxProfiles = {},
+            variables = {
+              item = "$",
+            },
+          },
         },
-        cssls = {},
         tailwindcss = {
           root_dir = function(...)
             return require("lspconfig.util").root_pattern(".git")(...)
           end,
         },
-        -- tsserver = {},
-        -- html = {},
-        lua_ls = {},
+        vtsls = {
+          settings = {
+            -- typescript = {
+            --   tsdk = "/home/erick/.cache/typescript/5.5",
+            -- },
+          },
+          handlers = {
+            ["textDocument/publishDiagnostics"] = vim.lsp.with(function(_, params, ctx, config)
+              local new = {
+                diagnostics = {},
+                uri = params.uri,
+              }
+              for _, diagnostic in ipairs(params.diagnostics) do
+                if diagnostic.severity ~= 4 then
+                  table.insert(new.diagnostics, diagnostic)
+                end
+              end
+              vim.lsp.diagnostic.on_publish_diagnostics(_, new, ctx, config)
+            end, {}),
+          },
+        },
       },
     },
   },

@@ -11,48 +11,70 @@ return {
   },
   keys = function()
     local harpoon = require("harpoon")
-
     local keys = {
       {
-        "sa",
+        "<leader>ha",
         function()
           harpoon:list():add()
           print("Added to Harpoon")
         end,
-        desc = "Harpoon File",
+        desc = "Harpoon Add File",
       },
       {
-        "<leader> ",
+        "<leader>hd",
+        function()
+          harpoon:list():remove()
+          print("Deleted from Harpoon")
+        end,
+        desc = "Harpoon Delete File",
+      },
+      {
+        "<leader>he",
+        function()
+          harpoon:list():clear()
+          print("Erase Harpoon list")
+        end,
+        desc = "Harpoon Erase List",
+      },
+      {
+        "<leader>H",
         function()
           harpoon.ui:toggle_quick_menu(harpoon:list())
         end,
         desc = "Harpoon Quick Menu",
       },
       {
-        "<C-Q>",
+        "<C-p>",
         function()
-          harpoon:list():prev()
+          harpoon:list():prev({ ui_nav_wrap = true })
         end,
         desc = "Harpoon Prev",
       },
       {
-        "<C-E>",
+        "<C-n>",
         function()
-          harpoon:list():next()
+          harpoon:list():next({ ui_nav_wrap = true })
         end,
         desc = "Harpoon Next",
       },
     }
 
-    for i, v in ipairs({ "h", "j", "k", "l", "ç" }) do
+    for i, v in ipairs({ "h", "j", "k", "l", "b" }) do
+      local item = harpoon:list():get(i)
+      local filename = ""
+      if item then
+        filename = item.value
+      end
+
       table.insert(keys, {
-        "z" .. v,
+        "<leader>h" .. v,
         function()
           harpoon:list():select(i)
         end,
-        desc = "Harpoon to File " .. i,
+        desc = "Harpoon to File " .. i .. ": " .. filename,
       })
     end
+
     return keys
   end,
 }
