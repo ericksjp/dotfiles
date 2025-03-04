@@ -1,56 +1,23 @@
-vim.api.nvim_create_autocmd("VimEnter", {
-  pattern = "*",
-  callback = function()
-    local arg = vim.fn.argv(0)
-    if arg == "." then
-      vim.defer_fn(function()
-        require("oil").open(vim.fn.getcwd())
-      end, 10)
-      require("colorscheme-file").set_colorscheme()
-    end
-  end,
-})
+local function startFunc()
+  local filePath = vim.fn.stdpath("data") .. "/bgfile"
 
-local function augroup(name)
-  return vim.api.nvim_create_augroup("lazyvim_" .. name, { clear = true })
+  local fileDescriptor = vim.uv.fs_open(filePath, "r", 436)
+  if not fileDescriptor then return end
+
+  local fileStat = vim.uv.fs_stat(filePath)
+  if not fileStat then return end
+
+  local fileData = vim.uv.fs_read(fileDescriptor, fileStat.size)
+  if not fileData then return end
+
+  fileData = vim.trim(fileData)
+  if fileData == "1" then vim.cmd("set background=light") end
+
+  vim.uv.fs_close(fileDescriptor)
 end
+vim.defer_fn(startFunc, 0)
 
-vim.api.nvim_create_autocmd("BufEnter", {
-  pattern = { "*" },
-  callback = function()
-    local bufnames = { "^NvimTree_*", "^term://*", "^$" }
-    local bufName = vim.fn.bufname()
-
-    -- caso especial pq eu nao pq caralhos o regex nao pega com hifen
-    if bufName == "copilot-chat" then
-      return
-    end
-
-    for _, buf in pairs(bufnames) do
-      if bufName:match(buf) then
-        return
-      end
-    end
-
-    vim.g.current_root_dir = LazyVim.root()
-  end,
-})
-
-local log = require("plenary.log"):new()
-log.level = "debug"
-
-vim.api.nvim_create_autocmd("DirChanged", {
-  pattern = "*",
-  callback = function()
-    local oil = require("oil").get_current_dir()
-    if oil and oil ~= vim.fn.getcwd() then
-      vim.defer_fn(function()
-        require("oil").open(vim.fn.getcwd())
-      end, 10)
-    end
-  end,
-})
-
+-- feeding zoxide
 vim.api.nvim_create_autocmd("DirChanged", {
   pattern = "*",
   callback = function()
@@ -58,13 +25,30 @@ vim.api.nvim_create_autocmd("DirChanged", {
   end,
 })
 
+vim.api.nvim_create_autocmd("DirChanged", {
+  pattern = "*",
+  callback = function()
+    require("utils.pined").load_pined()
+  end,
+})
+
+-- disable semantic tokens for java
 vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(args)
-    if vim.bo.filetype == "java" then
-      local client = vim.lsp.get_client_by_id(args.data.client_id)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client and client.name == "jdtls" then
       client.server_capabilities.semanticTokensProvider = nil
     end
   end,
+})
+
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function()
+    vim.diagnostic.config({
+      virtual_text = false,
+    })
+  end,
+  once = true,
 })
 
 vim.api.nvim_create_autocmd("OptionSet", {
@@ -74,58 +58,30 @@ vim.api.nvim_create_autocmd("OptionSet", {
       scope = "global",
     })
     if opt == "light" then
-      vim.cmd("colorscheme github_light_default")
+      vim.cmd("colorscheme github_light")
+      require("lualine").setup({
+        options = {
+          theme = "onelight",
+        },
+      })
     else
-      vim.cmd("colorscheme vscode")
+      vim.cmd("colorscheme hybrid")
+      require("lualine").setup({
+        options = {
+          theme = {
+            normal = { c = { fg = "#bbc2cf", bg = "#1a1a1a" } },
+            inactive = { c = { fg = "#bbc2cf", bg = "#202328" } },
+          },
+        },
+      })
     end
   end,
 })
 
 vim.api.nvim_create_autocmd("FileType", {
-  group = augroup("wrap_spell"),
-  pattern = { "text", "plaintex", "typst", "gitcommit", "markdown" },
+  pattern = { "text", "plaintext", "typst", "gitcommit", "markdown", "nofile", "oil" },
   callback = function()
     vim.opt_local.wrap = false
     vim.opt_local.spell = false
   end,
 })
-
-vim.cmd([[autocmd FileType * set formatoptions-=ro]])
-
-vim.api.nvim_create_user_command("Nf", function(opts)
-  local utils = require("utils.functions")
-  local args = utils.glueQuotes(opts.fargs)
-  local path = table.remove(args, 1)
-  utils.createFiles(path, args)
-end, { nargs = "*" })
-
-vim.api.nvim_command("command! -nargs=1 R lua Rename(<f-args>)")
-vim.api.nvim_command("command! -nargs=1 -complete=dir M lua Move(<f-args>)")
-
-function Rename(newName)
-  local bufname = vim.fn.expand("%:p")
-  local dirname = vim.fn.expand("%:p:h")
-  local newname = dirname .. "/" .. newName
-  local result = vim.fn.rename(bufname, newname)
-  if result == 0 then
-    vim.cmd("e " .. newname)
-    print("Renamed file to " .. newName)
-  else
-    print("Error renaming file")
-  end
-end
-
-function Move(newPath)
-  local bufname = vim.fn.expand("%:p")
-  if newPath:sub(-1) ~= "/" then
-    newPath = newPath .. "/"
-  end
-  local newname = newPath .. vim.fn.fnamemodify(bufname, ":t")
-  local result = vim.fn.rename(bufname, newname)
-  if result == 0 then
-    vim.cmd("e " .. newname)
-    print("Moved file to " .. newPath)
-  else
-    print("Error moving file")
-  end
-end

@@ -1,7 +1,7 @@
 -- one day this might be useful
 local M = {}
 
-function M.getDirectoryPathFromInput(inputPath)
+function M.getDirPathFromInput(inputPath)
   local cleanPath
   if vim.fn.isdirectory(inputPath) == 1 then
     cleanPath = inputPath
@@ -55,6 +55,46 @@ function M.createFiles(path, filesT)
   for _, f in ipairs(filesT) do
     M.create(path .. "/" .. f)
   end
+end
+
+function M.swap(a, b)
+  return b, a
+end
+
+function M.get_visual()
+  local _, ls, cs = unpack(vim.fn.getpos("v"))
+  local _, le, ce = unpack(vim.fn.getpos("."))
+  if ls > le or cs > ce then
+    ls, le = M.swap(ls, le)
+    cs, ce = M.swap(cs, ce)
+  elseif ls == le and cs == ce then
+    return vim.api.nvim_get_current_line()
+  end
+  return table.concat(vim.api.nvim_buf_get_text(0, ls - 1, cs - 1, le - 1, ce, {}), "")
+end
+
+function M.get_word()
+  if vim.fn.mode() == "n" then
+    return vim.fn.expand("<cword>")
+  else
+    return M.get_visual()
+  end
+end
+
+function M.set_qf_word(word)
+  if vim.bo.ft == "qf" then
+    vim.b.word = word
+    return true
+  end
+  return false
+end
+
+function M.Set(list)
+  local set = {}
+  for _, l in ipairs(list) do
+    set[l.bufnr] = true
+  end
+  return set
 end
 
 return M

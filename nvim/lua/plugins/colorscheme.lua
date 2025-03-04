@@ -1,38 +1,35 @@
 return {
   {
-    "gmr458/cold.nvim",
-    lazy = false,
-  },
-  {
-    "sainnhe/sonokai",
-    lazy = false,
+    "projekt0n/github-nvim-theme",
+    name = "github-theme",
+    lazy = false, -- make sure we load this during startup if it is your main colorscheme
+    priority = 1000, -- make sure to load this before all the other start plugins
     config = function()
-      -- vim.g.sonokai_style = "shusia"
-      -- vim.g.edge_enable_italic = 1
-      -- vim.g.sonokai_enable_italic = true
-      vim.g.sonokai_better_performance = true
+      require("github-theme").setup({
+        -- ...
+      })
     end,
   },
   {
-    "sainnhe/edge",
+    "HoNamDuong/hybrid.nvim",
     lazy = false,
+    priority = 1000,
     config = function()
-      vim.g.edge_style = "neon"
-      vim.g.edge_enable_italic = 1
-      vim.g.edge_disable_italic_comment = 1
-      vim.g.edge_better_performance = 1
-    end,
-  },
-  {
-    "Mofiqul/vscode.nvim",
-    lazy = false,
-    config = function()
-      require("vscode").setup({
-        style = "dark",
-        transparent = true,
-        italic_comments = true,
-        underline_links = false,
-        disable_nvimtree_bg = true,
+      -- Default options:
+      require("hybrid").setup({
+        terminal_colors = true,
+        undercurl = true,
+        underline = true,
+        bold = true,
+        italic = {
+          strings = false,
+          emphasis = true,
+          comments = true,
+          folds = true,
+        },
+        strikethrough = true,
+        inverse = true,
+        transparent = false,
       })
     end,
   },

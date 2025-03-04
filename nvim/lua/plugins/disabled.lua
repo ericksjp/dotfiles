@@ -4,15 +4,19 @@ return {
     enabled = false,
   },
   {
-    "iamcco/markdown-preview.nvim",
-    enabled = false,
-  },
-  {
-    "folke/flash.nvim",
+    "ibhagwan/fzf-lua",
     enabled = false,
   },
   {
     "MagicDuck/grug-far.nvim",
+    enabled = false,
+  },
+  -- {
+  --   "iamcco/markdown-preview.nvim",
+  --   enabled = false,
+  -- },
+  {
+    "folke/flash.nvim",
     enabled = false,
   },
   {
@@ -23,10 +27,10 @@ return {
     "echasnovski/mini.surround",
     enabled = false,
   },
-  {
-    "nvim-neo-tree/neo-tree.nvim",
-    enabled = false,
-  },
+  -- {
+  --   "nvim-neo-tree/neo-tree.nvim",
+  --   enabled = false,
+  -- },
   {
     "lukas-reineke/indent-blankline.nvim",
     enabled = false,
@@ -45,6 +49,10 @@ return {
   },
   {
     "folke/tokyonight.nvim",
+    enabled = false,
+  },
+  {
+    "vscode-neovim/vscode-neovim",
     enabled = false,
   },
 }

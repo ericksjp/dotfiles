@@ -19,6 +19,7 @@ return {
         "cpp",
         "bash",
         "java",
+        "prisma",
         "vimdoc",
       },
       query_linter = {

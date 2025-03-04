@@ -1,12 +1,4 @@
-local function GrepFiles(dir, name)
-  require("telescope.builtin").find_files({
-    no_ignore = false,
-    hidden = true,
-    cwd = dir,
-    prompt_title = "Find Files (" .. name .. ")",
-    -- layout_config = { prompt_position = "top", width = 0.95, preview_width = 0.6 },
-  })
-end
+local sm = require("utils.smart")
 
 return {
   "telescope.nvim",
@@ -17,179 +9,166 @@ return {
       build = "make",
     },
     "nvim-telescope/telescope-file-browser.nvim",
-  },
-  keys = {
-    {
-      "ss",
-      function()
-        GrepFiles(vim.fn.getcwd(), "CWD")
-      end,
-      desc = "Find files (cwd)",
-    },
-    {
-      "s<leader>",
-      function()
-        GrepFiles(LazyVim.root(), "Root Dir")
-      end,
-      desc = "List files (Root Dir)",
-    },
-    {
-      "sb",
-      function()
-        local bufname = require("oil").get_current_dir() or vim.fn.expand("%:p:h")
-        GrepFiles(bufname, "Buffer Dir")
-      end,
-      desc = "Find files (buffer dir)",
-    },
-    {
-      "sp",
-      function()
-        GrepFiles(require("utils.pineDir").getPineDir(), "Pine Dir")
-      end,
-      desc = "List files (Pine Dir)",
-    },
-    {
-      "sn",
-      function()
-        GrepFiles("~/notes", "Buffer Dir")
-      end,
-      desc = "Find files (Notes dir)",
-    },
-
-    {
-      "sff",
-      function()
-        require("telescope.builtin").live_grep({
-          cwd = vim.fn.getcwd(),
-        })
-      end,
-      desc = "Search for a string in your CWD and get results live as you type, respects .gitignore",
-    },
-    {
-      "sf<leader>",
-      function()
-        require("telescope.builtin").live_grep({
-          cwd = LazyVim.root(),
-        })
-      end,
-      desc = "Search for a string in your Root Dir and get results live as you type, respects .gitignore",
-    },
-    {
-      "sfb",
-      function()
-        local bufname = vim.fn.expand("%:p:h")
-        if bufname:match("^oil://*") ~= nil then
-          bufname = require("oil").get_current_dir() .. ""
-        end
-        require("telescope.builtin").live_grep({
-          cwd = bufname,
-        })
-      end,
-      desc = "Search for a string in your current Buffer directory and get results live as you type, respects .gitignore",
-    },
-    {
-      "so",
-      function()
-        require("telescope.builtin").buffers({
-          mappings = {
-            i = {
-              ["<C-d>"] = require("telescope.actions").delete_buffer,
-            },
-          },
-        })
-      end,
-      desc = "Lists open buffers",
-    },
-    {
-      "sr",
-      function()
-        require("telescope.builtin").resume()
-      end,
-      desc = "Resume the previous telescope picker",
-    },
-    {
-      "sd",
-      function()
-        require("telescope.builtin").diagnostics()
-      end,
-      desc = "Lists Diagnostics for all open buffers or a specific buffer",
-    },
-    {
-      "sl",
-      function()
-        require("telescope.builtin").treesitter()
-      end,
-      desc = "Lists Function names, variables, from Treesitter",
-    },
-    {
-      "sy",
-      function()
-        require("telescope.builtin").lsp_document_symbols({
-          symbols = LazyVim.config.get_kind_filter(),
-        })
-      end,
-      desc = "Goto Symbol",
-    },
-    {
-      "sm",
-      function()
-        require("telescope.builtin").lsp_document_symbols({})
-      end,
-      desc = "Lists all symbols in the current buffer",
-    },
+    "jvgrootveld/telescope-zoxide",
   },
   config = function(_, opts)
     local telescope = require("telescope")
     local actions = require("telescope.actions")
+    local action_state = require("telescope.actions.state")
+    local z_utils = require("telescope._extensions.zoxide.utils")
 
-    opts.defaults = vim.tbl_deep_extend("force", opts.defaults, {
-      wrap_results = true,
-      layout_strategy = "horizontal",
-      layout_config = { prompt_position = "top" },
+    local function fixed_qlist(prompt_bufnr)
+      local current_line = vim.b.telescope_grep_string_query or action_state.get_current_line()
+      actions.smart_send_to_qflist(prompt_bufnr)
+      actions.open_qflist(prompt_bufnr)
+      vim.b.word = current_line
+    end
+
+    opts.defaults = {
       sorting_strategy = "ascending",
+      layout_config = { prompt_position = "top" },
+      prompt_prefix = "   ",
       winblend = 0,
+      wrap_results = true,
       file_ignore_patterns = {
         "^.git/",
         "^node_modules/",
+        "^.github/",
       },
       mappings = {
-        n = {
-          ["<C-d>"] = actions.delete_buffer,
-        }, -- n
         i = {
-          ["<C-d>"] = actions.close,
-          ["<C-c>"] = false,
+          ["<esc>"] = actions.close,
+          ["<C-c>"] = actions.close,
+          ["<C-q>"] = actions.smart_send_to_qflist + actions.open_qflist,
+          ["<C-u>"] = false,
           ["<c-t>"] = actions.select_tab,
           ["<c-k>"] = actions.preview_scrolling_up,
           ["<c-j>"] = actions.preview_scrolling_down,
           ["<c-h>"] = actions.preview_scrolling_left,
           ["<c-l>"] = actions.preview_scrolling_right,
+          ["<c-a>"] = actions.toggle_selection + actions.move_selection_next,
         },
       },
-    })
+    }
+
     opts.pickers = {
       find_files = {
-        layout_config = { preview_width = 0, width = 0.5 },
+        theme = "ivy",
+        hidden = false,
+        layout_config = {
+          height = 0.9,
+        },
+        mappings = {
+          i = {
+            ["<tab>"] = function()
+              sm.FindFile(true)
+            end,
+          },
+        },
       },
       live_grep = {
-        layout_config = { preview_width = 0.6 },
+        theme = "ivy",
+        layout_config = {
+          height = 0.9,
+        },
+        mappings = {
+          i = {
+            ["<C-q>"] = fixed_qlist,
+            ["<tab>"] = function()
+              sm.GrepString(true)
+            end,
+          },
+        },
       },
+
+      grep_string = {
+        theme = "ivy",
+        layout_config = {
+          height = 0.9,
+        },
+        mappings = {
+          i = {
+            ["<C-q>"] = fixed_qlist,
+            ["<tab>"] = function()
+              local word = vim.b.telescope_grep_string_query
+              sm.GrepString(true, word)
+              vim.b.telescope_grep_string_query = word
+            end,
+          },
+        },
+      },
+
       buffers = {
+        theme = "ivy",
+        layout_config = {
+          height = 0.9,
+        },
         mappings = {
           i = {
             ["<c-d>"] = actions.delete_buffer,
           },
         },
       },
+
       diagnostics = {
         theme = "ivy",
         initial_mode = "normal",
+      },
+
+      git_commits = {
+        theme = "ivy",
         layout_config = {
-          preview_cutoff = 9999,
+          height = 0.9,
+        },
+      },
+
+      git_branches = {
+        theme = "ivy",
+        layout_config = {
+          height = 0.9,
         },
       },
     }
+
+    opts.extensions = {
+      zoxide = {
+        layout_config = {
+          height = 0.9,
+        },
+        prompt_title = "[ Zoxide List ]",
+
+        -- Zoxide list command with score
+        list_command = "zoxide query -ls",
+        mappings = {
+          default = {
+            keepinsert = true,
+            action = function(selection)
+              vim.cmd.cd(selection.path)
+            end,
+            after_action = function(selection)
+              vim.notify("Directory changed to " .. selection.path)
+              sm.FindFile(false, "cwd")
+            end,
+          },
+          ["<C-s>"] = { action = z_utils.create_basic_command("split") },
+          ["<C-v>"] = { action = z_utils.create_basic_command("vsplit") },
+          ["<C-e>"] = { action = z_utils.create_basic_command("edit") },
+          ["<C-f>"] = {
+            keepinsert = true,
+            action = function(selection)
+              require("telescope.builtin").find_files({ cwd = selection.path })
+            end,
+          },
+          ["<C-t>"] = {
+            action = function(selection)
+              vim.cmd.tcd(selection.path)
+            end,
+          },
+        },
+      },
+    }
+
     telescope.setup(opts)
-    require("telescope").load_extension("fzf")
+    telescope.load_extension("zoxide")
   end,
 }

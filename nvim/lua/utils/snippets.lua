@@ -11,4 +11,14 @@ ls.add_snippets("lua", {
   }),
 })
 
+ls.add_snippets("prisma", {
+  s("model", {
+    t("model "),
+    i(1),
+    t({ " {", "\t" }),
+    i(2),
+    t({ "\t", "}" }),
+  }),
+})
+
 return ls
