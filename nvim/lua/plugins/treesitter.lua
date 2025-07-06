@@ -21,6 +21,7 @@ return {
         "java",
         "prisma",
         "vimdoc",
+        "tsx"
       },
       query_linter = {
         enable = true,
