@@ -1,9 +1,9 @@
 return {
   "stevearc/oil.nvim",
-  enabled = false,
+  enabled = true,
   config = function()
     local oil = require("oil")
-    local detail = false
+    local detail = true
 
     oil.setup({
       float = {
@@ -11,7 +11,7 @@ return {
         max_width = 0.5,
         max_height = 0.5,
         get_win_title = function()
-          return oil.get_current_dir() .. " - " .. require("utils.smart").CurrentDir()
+          return oil.get_current_dir() .. " - " .. require("utils.smart").CurrentDir().name
         end,
         border = "rounded",
         win_options = {
@@ -22,8 +22,20 @@ return {
           return conf
         end,
       },
-      default_file_explorer = false,
+      columns = {
+        "icon",
+        "permissions",
+        "size",
+        "mtime",
+      },
+      lsp_file_methods = {
+        enabled = true,
+        timeout_ms = 1000,
+        autosave_changes = true,
+      },
+      default_file_explorer = true,
       delete_to_trash = true,
+      constrain_cursor = "name",
       skip_confirm_for_simple_edits = true,
       keymaps = {
         ["g?"] = { "actions.show_help", mode = "n" },
@@ -56,7 +68,7 @@ return {
             end
           end,
         },
-        ["<localleader>s"] = {
+        ["<localleader>d"] = {
           desc = "Set Pined Directory",
           callback = function()
             local entry = oil.get_cursor_entry()
@@ -69,20 +81,28 @@ return {
         ["<Tab>"] = {
           desc = "Move to Another Directory",
           callback = function()
-            require("utils.smart").MiniFiles(true)
+            require("utils.smart").Oil(true)
           end,
         },
-        ["<C-s>"] = {
-          desc = "Save changes",
-          callback = function()
-            require("oil").save(nil, function(err)
-              if err then
-                print("Error: " .. err)
-              end
-              require("oil").close()
-            end)
-          end,
+        ["ç"] = {
+          "actions.open_cmdline",
+          opts = {
+            shorten_path = true,
+            modify = ":h",
+          },
+          desc = "Open the command line with the current directory as an argument",
         },
+        -- ["<C-s>"] = {
+        --   desc = "Save changes",
+        --   callback = function()
+        --     require("oil").save(nil, function(err)
+        --       if err then
+        --         print("Error: " .. err)
+        --       end
+        --       require("oil").close()
+        --     end)
+        --   end,
+        -- },
       },
       use_default_keymaps = false,
     })

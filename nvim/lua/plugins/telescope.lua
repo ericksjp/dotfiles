@@ -16,6 +16,11 @@ return {
     local actions = require("telescope.actions")
     local action_state = require("telescope.actions.state")
     local z_utils = require("telescope._extensions.zoxide.utils")
+    local ivy = require("telescope.themes").get_ivy({
+      layout_config = {
+        height = 0.9,
+      },
+    })
 
     local function fixed_qlist(prompt_bufnr)
       local current_line = vim.b.telescope_grep_string_query or action_state.get_current_line()
@@ -24,7 +29,7 @@ return {
       vim.b.word = current_line
     end
 
-    opts.defaults = {
+    opts.defaults = vim.tbl_deep_extend("force", ivy, {
       sorting_strategy = "ascending",
       layout_config = { prompt_position = "top" },
       prompt_prefix = "   ",
@@ -34,6 +39,8 @@ return {
         "^.git/",
         "^node_modules/",
         "^.github/",
+        "^vendor/",
+        "^target/",
       },
       mappings = {
         i = {
@@ -49,9 +56,13 @@ return {
           ["<c-a>"] = actions.toggle_selection + actions.move_selection_next,
         },
       },
-    }
+    })
 
     opts.pickers = {
+      theme = "ivy",
+      help_tags = {
+        theme = "ivy",
+      },
       find_files = {
         theme = "ivy",
         hidden = false,

@@ -1,4 +1,5 @@
 local harpoon = require("harpoon")
+
 local function mapbuffer(key, func, desc)
   vim.keymap.set("n", key, func, { noremap = true, silent = true, desc = desc, buffer = true })
 end
@@ -18,3 +19,7 @@ end)
 mapbuffer("5", function()
   harpoon:list():select(5)
 end)
+
+mapbuffer("m", function()
+  harpoon.ui:select_menu_item()
+end, "Map 'm' to Enter")

@@ -1,5 +1,6 @@
 return {
   "epwalsh/obsidian.nvim",
+  enabled = false,
   version = "*",  -- recommended, use latest release instead of latest commit
   lazy = true,
   ft = "markdown",
@@ -32,5 +33,10 @@ return {
         date_format = "%Y-%m-%d-%a",
         time_format = "%H:%M",
     },
+
+    follow_url_func = function(url)
+        vim.fn.jobstart({"xdg-open", url})
+    end
+
 },
 }

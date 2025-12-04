@@ -1,5 +1,6 @@
 return {
-    'simaxme/java.nvim',
+    'ericksjp/java.nvim',
+    enabled = true,
     config = function()
         require("java").setup({
             rename = {

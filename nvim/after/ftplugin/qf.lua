@@ -1,4 +1,6 @@
 local Set = require("utils.functions").Set
+local func= require("vim.func")
+local text= require("vim.text")
 local del_qf_item = function()
   local items = vim.fn.getqflist()
   local line = vim.fn.line(".")
@@ -40,8 +42,17 @@ vim.keymap.set("n", "dd", del_qf_item, { silent = true, buffer = true, desc = "R
 vim.keymap.set("n", "df", del_qf_file, { silent = true, buffer = true, desc = "Remove file entry from QF" })
 vim.keymap.set("v", "d", del_qf_visual_select, { silent = true, buffer = true, desc = "Remove file entry from QF" })
 
+vim.keymap.set("n", "a", function()
+  local replace = vim.fn.input({ prompt = "Alter '" .. vim.b.word .. "' with: ", cancelreturn = false })
+  if not replace then
+    return
+  end
+
+  vim.b.word = replace
+end, { buffer = true, desc = "Alter word in QF" })
+
 vim.keymap.set("n", "o", function()
-  local target_word = vim.b.word:gsub("/", "\\/")
+  local target_word = vim.pesc(vim.b.word)
 
   local replace = vim.fn.input({
     prompt = "Cdo '" .. target_word .. "' with: ",
@@ -58,7 +69,7 @@ vim.keymap.set("n", "o", function()
 end, { buffer = true, desc = "Replace word in QF" })
 
 vim.keymap.set("n", "f", function()
-  local target_word = vim.b.word:gsub("/", "\\/")
+  local target_word = vim.pesc(vim.b.word)
 
   local replace = vim.fn.input({ prompt = "Cfdo '" .. target_word .. "' with: ", cancelreturn = false })
   if not replace then

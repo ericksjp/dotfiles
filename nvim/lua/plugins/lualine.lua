@@ -1,12 +1,13 @@
 return {
   "nvim-lualine/lualine.nvim",
   dependencies = {
-    "kyazdani42/nvim-web-devicons",
+    -- "kyazdani42/nvim-web-devicons",
     "AndreM222/copilot-lualine",
   },
   config = function()
     local lualine = require("lualine")
     local harpoon = require("harpoon")
+    -- local currentOilDir = require("oil").get_current_dir
 
     local colors = {
       bg = "#202328",
@@ -48,10 +49,11 @@ return {
       options = {
         component_separators = "",
         section_separators = "",
-        theme = {
-          normal = { c = { fg = colors.fg, bg = "#1a1a1a" } },
-          inactive = { c = { fg = colors.fg, bg = colors.bg } },
-        },
+        -- theme = 'sonokai',
+        -- theme = {
+        --   normal = { c = { fg = colors.fg, bg = "#1f1f1f" } },
+        --   inactive = { c = { fg = colors.fg, bg = "#1f1f1f" } },
+        -- },
       },
       sections = {
         lualine_a = {},
@@ -80,21 +82,36 @@ return {
     end
 
     ins_left({
+      function() return require("utils.smart").CurrentDir().name or "" end,
+    })
+
+    -- ins_left({
+    --     function()
+    --         local path = currentOilDir()
+    --         if path == nil or path == "" then
+    --             return ""
+    --         end
+    --
+    --         return vim.fn.fnamemodify(path, ':~')
+    --     end,
+    -- })
+
+    ins_left({
       "mode",
       color = { gui = "bold" },
       cond = conditions.is_oil_buffer,
     })
 
     ins_left({
-      require("utils.smart").CurrentDir,
-      cond = function()
-        return not conditions.is_oil_buffer()
-      end,
+        function()
+            return vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
+        end,
+        cond = conditions.is_oil_buffer,
     })
 
     ins_left({
       "filename",
-      path = 1,
+      path = 0,
       color = { gui = "bold" },
       cond = conditions.hide_if_oil(conditions.buffer_not_empty),
     })
@@ -141,6 +158,10 @@ return {
         info = { fg = colors.cyan },
       },
     })
+
+    -- ins_right({
+    --   ObsessionStatus, fmt = function(status) return status or '' end,
+    -- })
 
     ins_right({
       require("recorder").displaySlots,

@@ -1,11 +1,10 @@
 return {
   "mfussenegger/nvim-jdtls",
+  enabled = true,
   opts = function(_, opts)
     opts.root_dir = function(fname)
       local loaded_root_pattern = require("lspconfig.util").root_pattern
       local root_files = {
-        -- Multi-module projects
-        { ".git", "build.gradle", "build.gradle.kts" },
         -- Single-module projects
         {
           "build.xml", -- Ant
@@ -15,6 +14,8 @@ return {
           "*.iml", -- idea
           ".classpath",
         },
+        -- Multi-module projects
+        { ".git", "build.gradle", "build.gradle.kts" },
       }
 
       for _, patterns in ipairs(root_files) do

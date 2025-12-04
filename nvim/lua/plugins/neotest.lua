@@ -1,5 +1,6 @@
 return {
     "nvim-neotest/neotest",
+    enabled = false,
     dependencies = {
         "rcasia/neotest-java",
     },
