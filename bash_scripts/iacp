@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+
+set -e
+
+LANG_INSTRUCTION="10. The commit message language must be English."
+
+if [[ "$1" == "br" ]]; then
+  LANG_INSTRUCTION="10. The commit message language must be Brazilian Portuguese (pt-BR)."
+fi
+
+DIFF=$(git diff --cached)
+
+if [[ -z "$DIFF" ]]; then
+  echo "Error: Nenhuma mudança staged. Use git add antes."
+  exit 1
+fi
+
+PROMPT=$(cat <<EOF
+You are a tool specialized in generating Git commit messages.
+
+Carefully analyze the git DIFF (modified files,
+renames, removals, and additions) and generate ONE commit message
+strictly following the Conventional Commits standard.
+
+DIFF:
+-----------------------
+$DIFF
+-----------------------
+
+=====================
+
+Mandatory style rules:
+
+1. Use the format:
+   <type>(<scope>): <subject>
+2. Allowed types (use only the most appropriate one):
+   feat, fix, docs, refactor, chore, ci, build, test, perf
+3. The <scope> must be short, without spaces, and clearly represent
+   the affected area
+   (e.g. readme, infra, docker, swarm, vagrant, migrations, scripts).
+4. The <subject> must:
+   - Be written in the present tense (imperative mood)
+   - Be concise
+   - Not end with a period
+   - Not exceed 72 characters
+5. Always include a commit body when there are structural,
+   organizational, or workflow changes.
+6. The commit body must:
+   - Be separated from the title by a blank line
+   - Use hyphen (-) bullet points
+   - Describe only real changes observed in the repository
+   - Explain the "what" and the "why", never repeating the title
+7. Do not invent features, services, or files that do not exist in the diff.
+8. Do not include references to issues, pull requests, authors, or dates.
+9. Use technical, objective, and professional language, without emojis.
+$LANG_INSTRUCTION
+
+=====================
+
+Expected author context:
+- Prefers clear, descriptive, and well-organized commits
+- Uses Conventional Commits consistently
+- Values a readable and auditable Git history
+- Usually documents infrastructure and deployment flow changes in detail
+
+=====================
+
+The examples below illustrate format and style only.
+Never reuse their wording.
+
+Examples (for reference only):
+
+Example 1:
+Input diff summary:
+- Update README with installation instructions
+
+Expected output:
+docs(readme): document installation steps
+
+- Add step-by-step instructions for local setup
+- Clarify required environment variables
+
+Example 2:
+Input diff summary:
+- Rename Dockerfile
+- Update docker-compose service names
+
+Expected output:
+refactor(docker): align docker service naming
+
+- Rename Dockerfile to match new build strategy
+- Update docker-compose services for consistency
+
+Example 3:
+Input diff summary:
+- Fix null pointer error in user validation logic
+
+Expected output:
+fix(validation): prevent null pointer in user checks
+
+Example 4:
+Input diff summary:
+- Add new migration for user table
+- Modify repository queries to support new column
+
+Expected output:
+feat(migrations): add status column to users
+
+- Introduce new database migration for user status
+- Update repository queries to handle the new field
+
+Example 5:
+Input diff summary:
+- Reorganize scripts directory
+- Remove unused shell scripts
+
+Expected output:
+chore(scripts): clean up and reorganize scripts
+
+- Remove deprecated shell scripts
+- Group remaining scripts by responsibility
+
+=====================
+
+Output requirements:
+- Return ONLY the final commit message text
+- Do not explain your reasoning
+- Do not include variations or alternatives
+- Do not use Markdown or code blocks in the output
+EOF
+)
+
+echo "$PROMPT" | copy
+
+echo "Prompt copied to clipboard. Paste it into your AI tool to generate the commit message."

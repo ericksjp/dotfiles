@@ -1,0 +1,36 @@
+#!/usr/bin/bash
+
+clibpard_cmd=""
+if command -v wl-copy &>/dev/null; then
+    clibpard_cmd="wl-copy"
+elif command -v xclip &>/dev/null; then
+    clibpard_cmd="xclip -selection clipboard"
+elif command -v pbcopy &>/dev/null; then
+    clibpard_cmd="pbcopy"
+elif command -v xsel &>/dev/null; then
+    clibpard_cmd="xsel --clipboard --input"
+else
+    echo "Error: No clipboard utility found."
+    exit 1
+fi
+
+# if it's a pipe
+if [ ! -t 0 ]; then
+  cat | eval "$clibpard_cmd"
+  exit 0
+fi
+
+file="$1"
+
+if [ -z "$file" ]; then
+    echo "Usage: copy <file>"
+    exit 1
+fi
+
+fullpath="$(cd "$(dirname "$file")" && pwd)/$(basename "$file")"
+if [ ! -f "$fullpath" ]; then
+    echo "Usage: argument must be a valid file"
+    exit 1
+fi
+
+cat "$fullpath" | eval "$clibpard_cmd"
