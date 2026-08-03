@@ -3,10 +3,10 @@ return {
         "folke/noice.nvim",
         enabled = false,
     },
-    {
-        "rcarriga/nvim-dap-ui",
-        enabled = false,
-    },
+    -- {
+    --     "rcarriga/nvim-dap-ui",
+    --     enabled = false,
+    -- },
     {
         "nvim-mini/mini.comment",
         enabled = false,
@@ -17,7 +17,7 @@ return {
     },
     {
         "ibhagwan/fzf-lua",
-        enabled = false,
+        enabled = true,
     },
     {
         "MagicDuck/grug-far.nvim",
@@ -65,7 +65,7 @@ return {
     },
     {
         "catppuccin/nvim",
-        enabled = false,
+        enabled = true,
     },
     {
         "folke/tokyonight.nvim",

@@ -3,6 +3,7 @@ local sm = require("utils.smart")
 return {
   "telescope.nvim",
   priority = 1000,
+  enabled = false,
   dependencies = {
     {
       "nvim-telescope/telescope-fzf-native.nvim",

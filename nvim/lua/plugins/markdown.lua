@@ -1,10 +1,263 @@
 -- install with yarn or npm
 return {
-  "iamcco/markdown-preview.nvim",
-  cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-  build = "cd app && yarn install",
-  init = function()
-    vim.g.mkdp_filetypes = { "markdown" }
-  end,
-  ft = { "markdown" },
+
+    {
+        "HakonHarnes/img-clip.nvim",
+        enabled = false,
+        event = "VeryLazy",
+        opts = {
+            -- add options here
+            -- or leave it empty to use the default settings
+            default = {
+
+                -- file and directory options
+                -- expands dir_path to an absolute path
+                -- When you paste a new image, and you hover over its path, instead of:
+                -- test-images-img/2024-06-03-at-10-58-55.webp
+                -- You would see the entire path:
+                -- /Users/linkarzu/github/obsidian_main/999-test/test-images-img/2024-06-03-at-10-58-55.webp
+                --
+                -- IN MY CASE I DON'T WANT TO USE ABSOLUTE PATHS
+                -- if I switch to a nother computer and I have a different username,
+                -- therefore a different home directory, that's a problem because the
+                -- absolute paths will be pointing to a different directory
+                use_absolute_path = false, ---@type boolean
+
+                -- make dir_path relative to current file rather than the cwd
+                -- To see your current working directory run `:pwd`
+                -- So if this is set to false, the image will be created in that cwd
+                -- In my case, I want images to be where the file is, so I set it to true
+                relative_to_current_file = true, ---@type boolean
+
+                -- -- I want to save the images in a directory named after the current file,
+                -- -- but I want the name of the dir to end with `-img`
+                -- dir_path = function()
+                --   return vim.fn.expand("%:t:r") .. "-img"
+                -- end,
+
+                -- Conditional dir_path based on skitty mode
+                dir_path = vim.g.neovim_mode == "skitty" and "img" or function()
+                    return vim.fn.expand("%:t:r") .. "-img"
+                end,
+
+                -- If you want to get prompted for the filename when pasting an image
+                -- This is the actual name that the physical file will have
+                -- If you set it to true, enter the name without spaces or extension `test-image-1`
+                -- Remember we specified the extension above
+                --
+                -- I don't want to give my images a name, but instead autofill it using
+                -- the date and time as shown on `file_name` below
+                prompt_for_file_name = false, ---@type boolean
+                file_name = "%y%m%d-%H%M%S", ---@type string
+
+                -- -- Set the extension that the image file will have
+                -- -- I'm also specifying the image options with the `process_cmd`
+                -- -- Notice that I HAVE to convert the images to the desired format
+                -- -- If you don't specify the output format, you won't see the size decrease
+
+                extension = "avif", ---@type string
+                process_cmd = "convert - -quality 75 avif:-", ---@type string
+
+                -- extension = "webp", ---@type string
+                -- process_cmd = "convert - -quality 75 webp:-", ---@type string
+
+                -- extension = "png", ---@type string
+                -- process_cmd = "convert - -quality 75 png:-", ---@type string
+
+                -- extension = "jpg", ---@type string
+                -- process_cmd = "convert - -quality 75 jpg:-", ---@type string
+
+                -- -- Here are other conversion options to play around
+                -- -- Notice that with this other option you resize all the images
+                -- process_cmd = "convert - -quality 75 -resize 50% png:-", ---@type string
+
+                -- -- Other parameters I found in stackoverflow
+                -- -- https://stackoverflow.com/a/27269260
+                -- --
+                -- -- -depth value
+                -- -- Color depth is the number of bits per channel for each pixel. For
+                -- -- example, for a depth of 16 using RGB, each channel of Red, Green, and
+                -- -- Blue can range from 0 to 2^16-1 (65535). Use this option to specify
+                -- -- the depth of raw images formats whose depth is unknown such as GRAY,
+                -- -- RGB, or CMYK, or to change the depth of any image after it has been read.
+                -- --
+                -- -- compression-filter (filter-type)
+                -- -- compression level, which is 0 (worst but fastest compression) to 9 (best but slowest)
+                -- process_cmd = "convert - -depth 24 -define png:compression-filter=5 -define png:compression-level=9 -define png:compression-strategy=1 png:-",
+                --
+                -- -- These are for jpegs
+                -- process_cmd = "convert - -sampling-factor 4:2:0 -strip -interlace JPEG -colorspace RGB -quality 75 jpg:-",
+                -- process_cmd = "convert - -strip -interlace Plane -gaussian-blur 0.05 -quality 75 jpg:-",
+                --
+            },
+
+            -- filetype specific options
+            filetypes = {
+                typst = {
+                    url_encode_path = true, ---@type boolean
+
+                    -- If your current Neovim working directory (:pwd) is inside ~/github/net-book,
+                    -- return false so the plugin does NOT place images relative to the current file.
+                    -- That makes it use the cwd as the base, so "assets/img/imgs" works from the repo root.
+                    -- If you're outside that repo, return true so images are stored relative to the current file.
+                    relative_to_current_file = function()
+                        local cwd = vim.loop.cwd() or vim.fn.getcwd()
+                        local net_book = vim.fn.expand("~/github/net-book")
+                        return not vim.startswith(cwd, net_book)
+                    end, ---@type boolean
+
+                    -- Choose the image output directory based on where you're working:
+                    -- - Inside ~/github/net-book: always use the repo's assets/img/imgs folder.
+                    -- - Anywhere else: create/use a folder next to the current file named "<filename>-img".
+                    dir_path = function()
+                        local cwd = vim.loop.cwd() or vim.fn.getcwd()
+                        local net_book = vim.fn.expand("~/github/net-book")
+                        if vim.startswith(cwd, net_book) then
+                            return "assets/img/imgs"
+                        end
+                        return vim.fn.expand("%:t:r") .. "-img"
+                    end,
+
+                    extension = "webp",
+                    process_cmd = "convert - -quality 75 webp:-",
+                    template = [[
+#figure(
+  image("$FILE_PATH"),
+  caption: $CURSOR[],
+) <fig-$LABEL>
+    ]], ---@type string | fun(context: table): string
+                },
+                markdown = {
+                    -- encode spaces and special characters in file path
+                    url_encode_path = true, ---@type boolean
+
+                    -- -- The template is what specifies how the alternative text and path
+                    -- -- of the image will appear in your file
+                    --
+                    -- -- $CURSOR will paste the image and place your cursor in that part so
+                    -- -- you can type the "alternative text", keep in mind that this will
+                    -- -- not affect the name that the image physically has
+                    -- template = "![$CURSOR]($FILE_PATH)", ---@type string
+                    --
+                    -- -- This will just statically type "Image" in the alternative text
+                    -- template = "![Image]($FILE_PATH)", ---@type string
+                    -- Conditional template for skitty mode
+                    -- template = vim.g.neovim_mode == "skitty" and "![i]($FILE_PATH)" or "![Image]($FILE_PATH)",
+                    --
+                    -- I want to use blink.cmp to easily find images with the LSP, so adding ./ lamw25wmal
+                    template = vim.g.neovim_mode == "skitty" and "![ ](./$FILE_PATH)" or "![Image](./$FILE_PATH)",
+                    --
+                    -- -- This will dynamically configure the alternative text to show the
+                    -- -- same that you configured as the "file_name" above
+                    -- -- I really don't need to see the entire filename in the alternative
+                    -- -- text field, so just switched it to show "Image"
+                    -- template = "![$FILE_NAME]($FILE_PATH)", ---@type string
+                },
+            },
+        },
+        keys = {
+            -- suggested keymap
+            { "<leader>v", "<cmd>PasteImage<cr>", desc = "Paste image from system clipboard" },
+        },
+    },
+
+    {
+        "arnamak/stay-centered.nvim",
+        -- enabled = vim.g.scrollback_mode ~= "neobean" and vim.g.simpler_scrollback ~= "deeznuts",
+        enabled = false,
+        opts = function()
+            require("stay-centered").setup({
+                -- Add any configurations here, like skip_filetypes if needed
+                -- skip_filetypes = {"lua", "typescript"},
+            })
+            -- Define the keymap to toggle the stay-centered plugin
+            -- I had to move this keymap here inside, otherwise the plugin started
+            -- disabled if I set the keymap outside under "keys"
+            vim.keymap.set("n", "<leader>US", function()
+                require("stay-centered").toggle()
+                vim.notify("Toggled stay-centered", vim.log.levels.INFO)
+            end, { desc = "[P]Toggle stay-centered.nvim" })
+        end,
+    },
+
+    {
+        "iamcco/markdown-preview.nvim",
+        -- ft = { "markdown" },
+        enabled = true,
+        lazy = false,
+        cmd = {
+            "MarkdownPreview",
+            "MarkdownPreviewToggle",
+            "MarkdownPreviewStop",
+        },
+        build = "cd app && yarn install",
+        init = function()
+            -- Do NOT auto-open every markdown file
+            vim.g.mkdp_auto_start = 0
+
+            -- Optional: close preview when leaving markdown buffer
+            vim.g.mkdp_auto_close = 0
+            vim.g.mkdp_command_for_global = 1
+            vim.g.mkdp_combine_preview = 1
+            vim.g.mkdp_refresh_slow = 1
+            vim.g.mkdp_page_title = "${name}"
+
+            vim.g.mkdp_filetypes = { "markdown" }
+        end,
+        -- config = function()
+        --     vim.keymap.set("n", "<leader>mp", function()
+        --         local ft = vim.bo.filetype
+        --
+        --         if ft ~= "markdown" then
+        --             vim.notify("Current file is not Markdown", vim.log.levels.WARN)
+        --             return
+        --         end
+        --
+        --         -- Stop previous preview first
+        --         vim.cmd("MarkdownPreviewStop")
+        --
+        --         -- Small delay so the server/browser state updates cleanly
+        --         vim.defer_fn(function()
+        --             vim.cmd("MarkdownPreview")
+        --         end, 100)
+        --     end, {
+        --         desc = "Open Markdown preview for current file",
+        --     })
+        -- end,
+    },
+
+    {
+        "MeanderingProgrammer/render-markdown.nvim",
+        enabled = false,
+        dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.nvim" }, -- if you use the mini.nvim suite
+        ---@module 'render-markdown'
+        ---@type render.md.UserConfig
+        opts = {
+            bullet = { enabled = false },
+            anti_conceal = { enabled = false },
+            heading = { enabled = false },
+            code = { enabled = true },
+            list = { enabled = false },
+            dash = { enabled = false },
+            document = { enabled = false },
+            indent = { enabled = false },
+            inline_highlight = { enabled = false },
+            latex = { enabled = true },
+            link = { enabled = true },
+            padding = { enabled = false },
+            paragraph = { enabled = true },
+            quote = { enabled = true },
+            blockquote = { enabled = false },
+            render = { enabled = true },
+            sign = { enabled = true },
+            yaml = { enabled = true },
+            thematic_break = { enabled = true },
+            checkbox = { enabled = true },
+            math = { enabled = true },
+            html = { enabled = true },
+            inline = { enabled = true },
+            grid_table = { enabled = true },
+            pipe_table = { enabled = false },
+        },
+    },
 }

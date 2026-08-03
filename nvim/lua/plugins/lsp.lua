@@ -17,9 +17,44 @@ return {
                 "prettierd",
                 "tailwindcss-language-server",
                 "typescript-language-server",
+                "xmlformatter",
+                "lemminx",
+                "google-java-format",
+                "palantir-java-format",
             })
         end,
     },
+
+    -- code formatters
+    {
+        "stevearc/conform.nvim",
+        opts = function(_, opts)
+            opts.formatters_by_ft = vim.tbl_extend("force", opts.formatters_by_ft, {
+                xml = { "xmlformatter" },
+                java = { "palantir-java-format" }
+            })
+
+            -- opts.formatters = vim.tbl_extend("force", opts.formatters, {
+            --     prettier = {
+            --         prepend_args = { "--tab-width", "2", "--print-width", "120" },
+            --     },
+            -- })
+
+            return opts
+        end,
+    },
+
+    -- -- linters
+    -- {
+    --     "mfussenegger/nvim-lint",
+    --     optional = true,
+    --     opts = function(_, opts)
+    --         for _, ft in ipairs(sql_ft) do
+    --             opts.linters_by_ft[ft] = opts.linters_by_ft[ft] or {}
+    --             table.insert(opts.linters_by_ft[ft], "sonarlint-language-server")
+    --         end
+    --     end,
+    -- },
 
     -- lsp servers
     {

@@ -1,28 +1,28 @@
-local function startFunc()
-    local filePath = vim.fn.stdpath("data") .. "/bgfile"
-
-    local fileDescriptor = vim.uv.fs_open(filePath, "r", 436)
-    if not fileDescriptor then
-        return
-    end
-
-    local fileStat = vim.uv.fs_stat(filePath)
-    if not fileStat then
-        return
-    end
-
-    local fileData = vim.uv.fs_read(fileDescriptor, fileStat.size)
-    if not fileData then
-        return
-    end
-
-    fileData = vim.trim(fileData)
-    if fileData == "1" then
-        vim.cmd("set background=light")
-    end
-
-    vim.uv.fs_close(fileDescriptor)
-end
+-- local function startFunc()
+--     local filePath = vim.fn.stdpath("data") .. "/bgfile"
+--
+--     local fileDescriptor = vim.uv.fs_open(filePath, "r", 436)
+--     if not fileDescriptor then
+--         return
+--     end
+--
+--     local fileStat = vim.uv.fs_stat(filePath)
+--     if not fileStat then
+--         return
+--     end
+--
+--     local fileData = vim.uv.fs_read(fileDescriptor, fileStat.size)
+--     if not fileData then
+--         return
+--     end
+--
+--     fileData = vim.trim(fileData)
+--     if fileData == "light" then
+--         vim.cmd("set background=light")
+--     end
+--
+--     vim.uv.fs_close(fileDescriptor)
+-- end
 
 local function loadSession()
     local sessionFile = vim.fn.getcwd() .. "/.vim/Session.vim"
@@ -31,7 +31,7 @@ local function loadSession()
     end
 end
 
-vim.defer_fn(startFunc, 0)
+-- vim.defer_fn(startFunc, 0)
 vim.defer_fn(loadSession, 0)
 
 -- feeding zoxide
@@ -78,7 +78,7 @@ vim.api.nvim_create_autocmd("User", {
         end
 
         local currenFile = require("utils.smart").bufferBeforeOil
-        local path = currentDir.path()
+        local path = currentDir.getDir()
 
         local line_count = vim.api.nvim_buf_line_count(0)
         local buffer = vim.api.nvim_get_current_buf()
@@ -103,34 +103,6 @@ vim.api.nvim_create_autocmd("User", {
     end,
 })
 
-vim.api.nvim_create_autocmd("OptionSet", {
-    pattern = "background",
-    callback = function()
-        local opt = vim.api.nvim_get_option_value("background", {
-            scope = "global",
-        })
-        if opt == "light" then
-            vim.cmd("colorscheme jb")
-            require("lualine").setup({
-                options = {
-                    theme = "onelight",
-                },
-            })
-        else
-            vim.cmd("colorscheme vscode")
-            require("lualine").setup({
-                options = {
-                    -- theme = "vscode",
-                    theme = {
-                        normal = { c = { fg = "#bbc2cf", bg = "#1a1a1a" } },
-                        inactive = { c = { fg = "#bbc2cf", bg = "#202328" } },
-                    },
-                },
-            })
-        end
-    end,
-})
-
 vim.api.nvim_create_autocmd("FileType", {
     pattern = { "text", "plaintext", "typst", "gitcommit", "markdown", "nofile", "oil" },
     callback = function()
@@ -139,11 +111,31 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
-vim.api.nvim_create_autocmd("User", {
-    pattern = "OilActionsPost",
-    callback = function(event)
-        if event.data.actions[1].type == "move" then
-            Snacks.rename.on_rename_file(event.data.actions[1].src_url, event.data.actions[1].dest_url)
-        end
-    end,
+-- vim.api.nvim_create_autocmd("User", {
+--     pattern = "OilActionsPost",
+--     callback = function(event)
+--         if event.data.actions[1].type == "move" then
+--             Snacks.rename.on_rename_file(event.data.actions[1].src_url, event.data.actions[1].dest_url)
+--         end
+--     end,
+-- })
+
+vim.api.nvim_create_autocmd("VimLeavePre", {
+    callback = function()
+        os.execute("rm -rf oil-ssh:* .oil-* 2>/dev/null")
+    end
 })
+
+vim.api.nvim_create_user_command("WatchRun", function()
+  local overseer = require("overseer")
+  overseer.run_task({ name = "run script", autostart = false }, function(task)
+    if task then
+      task:add_component({ "restart_on_save", paths = { vim.fn.expand("%:p") } })
+      task:start()
+      task:open_output("vertical")
+    else
+      vim.notify("WatchRun not supported for filetype " .. vim.bo.filetype, vim.log.levels.ERROR)
+    end
+  end)
+end, {})
+

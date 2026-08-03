@@ -38,12 +38,18 @@ local del_qf_visual_select = function()
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<esc>", true, false, true), "m", true)
 end
 
+
+local function escape(str)
+  local specials = "().+-*?[]^$/"
+  return (str:gsub("[" .. specials:gsub("%W", "%%%1") .. "]", "\\%1"))
+end
+
 vim.keymap.set("n", "dd", del_qf_item, { silent = true, buffer = true, desc = "Remove entry from QF" })
 vim.keymap.set("n", "df", del_qf_file, { silent = true, buffer = true, desc = "Remove file entry from QF" })
 vim.keymap.set("v", "d", del_qf_visual_select, { silent = true, buffer = true, desc = "Remove file entry from QF" })
 
-vim.keymap.set("n", "a", function()
-  local replace = vim.fn.input({ prompt = "Alter '" .. vim.b.word .. "' with: ", cancelreturn = false })
+vim.keymap.set("n", "e", function()
+  local replace = vim.fn.input({ prompt = "Edit '" .. vim.b.word .. "' with: ", cancelreturn = false })
   if not replace then
     return
   end
@@ -69,7 +75,7 @@ vim.keymap.set("n", "o", function()
 end, { buffer = true, desc = "Replace word in QF" })
 
 vim.keymap.set("n", "f", function()
-  local target_word = vim.pesc(vim.b.word)
+  local target_word = escape(vim.b.word)
 
   local replace = vim.fn.input({ prompt = "Cfdo '" .. target_word .. "' with: ", cancelreturn = false })
   if not replace then

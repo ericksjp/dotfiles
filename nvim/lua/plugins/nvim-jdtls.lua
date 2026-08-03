@@ -1,29 +1,43 @@
 return {
-  "mfussenegger/nvim-jdtls",
-  enabled = true,
-  opts = function(_, opts)
-    opts.root_dir = function(fname)
-      local loaded_root_pattern = require("lspconfig.util").root_pattern
-      local root_files = {
-        -- Single-module projects
-        {
-          "build.xml", -- Ant
-          "pom.xml", -- Maven
-          "settings.gradle", -- Gradle
-          "settings.gradle.kts", -- Gradle
-          "*.iml", -- idea
-          ".classpath",
-        },
-        -- Multi-module projects
-        { ".git", "build.gradle", "build.gradle.kts" },
-      }
+    "mfussenegger/nvim-jdtls",
+    enabled = true,
+    opts = function(_, opts)
+        opts.settings.java = vim.tbl_extend("force", opts.settings.java or {}, {
+            import = {
+                maven = {
+                    enabled = true,
+                },
+            },
+            eclipse = {
+                downloadSources = true,
+            },
+            maven = {
+                downloadSources = true,
+            },
+        })
 
-      for _, patterns in ipairs(root_files) do
-        local root = loaded_root_pattern(unpack(patterns))(fname)
-        if root then
-          return root
+        opts.root_dir = function(fname)
+            local loaded_root_pattern = require("lspconfig.util").root_pattern
+            local root_files = {
+                -- Single-module projects
+                {
+                    "build.xml", -- Ant
+                    "pom.xml", -- Maven
+                    "settings.gradle", -- Gradle
+                    "settings.gradle.kts", -- Gradle
+                    "*.iml", -- idea
+                    ".classpath",
+                },
+                -- Multi-module projects
+                { ".git", "build.gradle", "build.gradle.kts" },
+            }
+
+            for _, patterns in ipairs(root_files) do
+                local root = loaded_root_pattern(unpack(patterns))(fname)
+                if root then
+                    return root
+                end
+            end
         end
-      end
-    end
-  end,
+    end,
 }

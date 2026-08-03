@@ -20,17 +20,22 @@ return {
     --     },
     -- },
     opts = function(_, opts)
-        local jackson = require("utils.ntree_helper")
+        local ntree_helper = require("utils.ntree_helper")
         local events = require("neo-tree.events")
 
+        vim.api.nvim_set_hl(0, "NeoTreeNotifyMe", {
+            fg = "#ffffff",
+            bold = true,
+        })
+
         local function on_move(data)
-          Snacks.rename.on_rename_file(data.source, data.destination)
+            Snacks.rename.on_rename_file(data.source, data.destination)
         end
 
         opts.event_handlers = opts.event_handlers or {}
         vim.list_extend(opts.event_handlers, {
-          { event = events.FILE_MOVED, handler = on_move },
-          { event = events.FILE_RENAMED, handler = on_move },
+            { event = events.FILE_MOVED, handler = on_move },
+            { event = events.FILE_RENAMED, handler = on_move },
         })
 
         opts.default_component_configs = {
@@ -46,14 +51,14 @@ return {
             group_empty_dirs = true,
             hijack_netrw_behavior = "disabled",
             components = {
-                notify_me = function(config, node, state)
-                    if not jackson.is_selected(node.id) then
-                        return nil
+                marked = function(config, node, state)
+                    if not ntree_helper.is_selected(node.id) then
+                        return { text = "" }
                     end
 
                     return {
-                        text = "(X)",
-                        highlight = "Comment",
+                        text = "●",
+                        highlight = "NeoTreeNotifyMe",
                     }
                 end,
             },
@@ -65,6 +70,7 @@ return {
                     {
                         "container",
                         content = {
+                            { "marked", zindex = 10, align = "left" },
                             { "name", zindex = 10 },
                             {
                                 "symlink_target",
@@ -86,7 +92,6 @@ return {
                             { "created", zindex = 10, align = "right" },
                         },
                     },
-                    { "notify_me", zindex = 30, align = "right" },
                 },
                 file = {
                     { "indent" },
@@ -94,10 +99,8 @@ return {
                     {
                         "container",
                         content = {
-                            {
-                                "name",
-                                zindex = 10,
-                            },
+                            { "marked", zindex = 10, align = "left" },
+                            { "name", zindex = 10 },
                             {
                                 "symlink_target",
                                 zindex = 10,
@@ -114,7 +117,6 @@ return {
                             { "created", zindex = 10, align = "right" },
                         },
                     },
-                    { "notify_me", zindex = 30, align = "right" },
                 },
                 message = {
                     { "indent", with_markers = false },
@@ -129,21 +131,76 @@ return {
             },
         })
 
+        -- opts.event_handlers = {
+        --     {
+        --         event = "file_opened",
+        --         handler = function(path)
+        --             if path and path:match("%.md$") then
+        --                 vim.cmd("Neotree focus")
+        --             end
+        --         end,
+        --     },
+        -- }
+
+        opts.commands = opts.commands or {}
+
+        opts.commands.toggle_auto_buffer_preview = function()
+            local status = ntree_helper.toggle_auto_buffer_preview()
+
+            if status then
+                -- vim.cmd("MarkdownPreview")
+                vim.notify("Neo-tree buffer preview: ON")
+                ntree_helper.open_current_node_keep_focus()
+            else
+                -- vim.cmd("MarkdownPreviewStop")
+                vim.notify("Neo-tree buffer preview: OFF")
+            end
+        end
+
+        local group = vim.api.nvim_create_augroup("NeoTreeAutoBufferPreview", {
+            clear = true,
+        })
+
+        vim.api.nvim_create_autocmd("CursorMoved", {
+            group = group,
+            callback = function()
+                local ft = vim.bo.filetype
+                if ft ~= "neo-tree" then
+                    return
+                end
+
+                ntree_helper.open_current_node_keep_focus()
+            end,
+        })
+
         opts.window = {
-            position = "right",
+            position = "left",
             mappings = {
                 ["e"] = "navigate_up",
-                ["o"] = jackson.clear_selected,
-                ["a"] = jackson.add_multiple_files,
-                ["x"] = jackson.toggle_selected,
-                ["m"] = jackson.move_items,
-                ["d"] = jackson.delete_selected,
+                ["w"] = ntree_helper.toggle_selected, -- toggle selection of the current file/directory
+                ["<C-a>"] = ntree_helper.select_all, -- select all files in the current node directory
+                ["u"] = ntree_helper.unselect_all, -- unselect all files in the current node directory
+                ["<C-u>"] = ntree_helper.clear_selected, -- clear all selected
+                ["a"] = ntree_helper.add_multiple_files,
+                ["m"] = ntree_helper.move_items,
+                ["d"] = ntree_helper.delete_selected,
+                ["P"] = "toggle_auto_buffer_preview",
+                ["o"] = ntree_helper.opencode_selected,
                 ["f"] = "",
-                ["l"] = "open",
-                ["<c-x>"] = "",
+                ["l"] = function(state)
+                    local node = state.tree:get_node()
+                    if node.type == "directory" then
+                        require("neo-tree.sources.filesystem.commands").toggle_node(state)
+                    else
+                        require("neo-tree.sources.filesystem.commands").open(state)
+                        pcall(vim.cmd("Neotree focus"))
+                    end
+                end,
+                ["<C-f>"] = "filter_on_submit",
                 ["<localleader>d"] = function(state)
                     require("utils.pined").set_pined(getPath(state))
                 end,
+                ["<localleader>e"] = ntree_helper.open_external,
                 ["<localleader>,"] = function(state)
                     local path = getPath(state)
                     vim.cmd("cd " .. path)
@@ -152,22 +209,37 @@ return {
                 ["<tab>"] = function()
                     require("utils.smart").Neotree(true)
                 end,
-                ["<leader><leader>"] = function(state)
-                    local path = getPath(state)
-                    require("telescope.builtin").find_files({
-                        no_ignore = false,
-                        hidden = true,
-                        cwd = path,
-                        prompt_title = "Find Files - " .. path,
-                    })
+                ["<localleader>f"] = function(state)
+                    local dir = getPath(state)
+
+                    if not dir or dir == "" then
+                        vim.notify("Error getting current directory", vim.log.levels.ERROR)
+                        return
+                    end
+
+                    vim.system({ "xdg-open", dir }, {}, function(result)
+                        if result.code ~= 0 then
+                            vim.notify("Error opening file explorer: " .. result.stderr, vim.log.levels.ERROR)
+                            return
+                        end
+                    end)
                 end,
-                ["<leader>fs"] = function(state)
-                    local path = getPath(state)
-                    require("telescope.builtin").live_grep({
-                        cwd = path,
-                        prompt_title = "Live Grep - " .. path,
-                    })
-                end,
+                -- ["<leader><leader>"] = function(state)
+                --     local path = getPath(state)
+                --     require("telescope.builtin").find_files({
+                --         no_ignore = false,
+                --         hidden = true,
+                --         cwd = path,
+                --         prompt_title = "Find Files - " .. path,
+                --     })
+                -- end,
+                -- ["<leader>fs"] = function(state)
+                --     local path = getPath(state)
+                --     require("telescope.builtin").live_grep({
+                --         cwd = path,
+                --         prompt_title = "Live Grep - " .. path,
+                --     })
+                -- end,
                 -- ["o"] = function(state)
                 --   local node = state.tree:get_node()
                 --   local path = node:get_parent_id()

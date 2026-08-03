@@ -18,6 +18,8 @@ map("n", "t", "@")
 map("n", "<leader>S", ":w<CR>:source %<CR>", opts)
 map("i", "<c-d>", "<esc>:$<cr>", { noremap = true, silent = true })
 
+vim.keymap.del("n", "<leader>n")
+
 -- resize
 map("n", "<M-k>", function()
     require("tmux").resize_top()
@@ -109,28 +111,28 @@ map("n", "<leader>mp", ":MarkdownPreviewToggle<cr>", { desc = "Markdown Preview"
 map("n", "<leader>D", ":DBUIToggle<cr>", { desc = "Toggle dadbod-ui", silent = true })
 
 -- obsession
-map("n", "<leader>os", function()
-    local path = vim.fn.getcwd() .. "/.vim"
-    if vim.fn.filereadable(path .. "/Session.vim") == 0 then
-        vim.fn.mkdir(path, "p")
-        vim.cmd("Obsession " .. path)
-        vim.notify("Tracking session in .vim/Session.vim", "info")
-    else
-        vim.cmd("Obsession")
-        local stats = vim.fn.ObsessionStatus() == "[S]" and "Pausing " or "Tracking "
-        vim.notify(stats .. "session in .vim/Session.vim", "info")
-    end
-end, { desc = "Toggle obsession tracking" })
-
-map("n", "<leader>od", function()
-    local sessionFile = vim.fn.getcwd() .. "/.vim/Session.vim"
-    if vim.fn.filereadable(sessionFile) == 1 then
-        vim.cmd("Obsession!")
-        vim.notify("Obsession file deleted", "info")
-    else
-        vim.notify("No obsession file found", "error")
-    end
-end, { silent = true, desc = "Delete obsession file" })
+-- map("n", "<leader>os", function()
+--     local path = vim.fn.getcwd() .. "/.vim"
+--     if vim.fn.filereadable(path .. "/Session.vim") == 0 then
+--         vim.fn.mkdir(path, "p")
+--         vim.cmd("Obsession " .. path)
+--         vim.notify("Tracking session in .vim/Session.vim", "info")
+--     else
+--         vim.cmd("Obsession")
+--         local stats = vim.fn.ObsessionStatus() == "[S]" and "Pausing " or "Tracking "
+--         vim.notify(stats .. "session in .vim/Session.vim", "info")
+--     end
+-- end, { desc = "Toggle obsession tracking" })
+--
+-- map("n", "<leader>od", function()
+--     local sessionFile = vim.fn.getcwd() .. "/.vim/Session.vim"
+--     if vim.fn.filereadable(sessionFile) == 1 then
+--         vim.cmd("Obsession!")
+--         vim.notify("Obsession file deleted", "info")
+--     else
+--         vim.notify("No obsession file found", "error")
+--     end
+-- end, { silent = true, desc = "Delete obsession file" })
 
 -- -- leap
 -- map("n", "f", "<Plug>(leap)", opts)
@@ -164,11 +166,16 @@ end, { desc = "Open Neotree", silent = true })
 map("n", "<leader>e", function()
     sm.Oil(false)
 end, { desc = "Open MiniFiles", silent = true, noremap = true })
+
+-- map("n", "<localleader>e", function()
+--     require("oil").open()
+-- end, { desc = "Open Oil in new tab", silent = true, noremap = true })
 -- map("n", "<leader>fe", function() Snacks.explorer() end, { desc = "Open Explorer", silent = true, noremap = true })
 
 -------telescope
 map("n", "<leader><leader>", function()
-    sm.FindFile(false)
+    local current = sm.GetCurrent()
+    vim.cmd("FzfLua files cwd=" .. current.getDir() .. " winopts.title=Files-" .. current.name)
 end, { desc = "Find File" })
 
 -- map("n", "<leader>m", function() Snacks.picker.smart({layout = "select"}) end, { desc = "Smart" })
@@ -177,26 +184,40 @@ end, { desc = "Find File" })
 --   Snacks.picker.smart();
 -- end, { desc = "Find File" })
 
-map("n", "<leader>cd", function()
-    require("telescope").extensions.zoxide.list(require("telescope.themes").get_ivy({
-        layout_config = {
-            height = 0.9,
-        },
-    }))
-end, { desc = "Find Zoxide Directories" })
+map("n", "<leader>fd", ":FzfLua zoxide<CR>", { desc = "Find Zoxide Directories" })
+
+-- vim.keymap.del("n", "<leader>l")
+-- map("n", "<leader>lv", ":Lazy<cr>", { desc = "Lazy" })
+--
+-- map("n", "<leader>lr", function()
+--     local oil_win = vim.api.nvim_get_current_win()
+--
+--     vim.cmd("vsplit")
+--     local columns = vim.o.columns
+--     vim.cmd("vertical resize " .. math.floor(columns * 0.7))
+--
+--     vim.api.nvim_set_current_win(oil_win)
+--
+--     vim.cmd("split")
+--     require("oil").open(vim.fn.getcwd())
+--
+--     vim.api.nvim_set_current_win(oil_win)
+-- end, { desc = "Remote Layout" })
 
 map("n", "<leader>fs", function()
-    sm.GrepString(false)
-end, { desc = "Find String" })
-
-map({ "n", "v" }, "<leader>sf", function()
-    sm.GrepString(false, funcs.get_word())
+    local current = sm.GetCurrent()
+    vim.cmd("FzfLua live_grep cwd=" .. current.getDir() .. " winopts.title=Grep-" .. current.name)
 end, { desc = "Grep String" })
 
-map("n", "<leader>fm", function()
-    marks.delAutoMarks()
-    require("telescope.builtin").marks()
-end, { desc = "Find Mark" })
+ map({ "n", "v" }, "<leader>sf", function()
+    local current = sm.GetCurrent()
+    vim.cmd("FzfLua grep_cWORD  cwd=" .. current.getDir() .. " winopts.title=Grep-" .. current.name)
+ end, { desc = "Grep String" })
+
+-- map("n", "<leader>fm", function()
+--     marks.delAutoMarks()
+--     require("telescope.builtin").marks()
+-- end, { desc = "Find Mark" })
 
 -- snacks
 
@@ -246,7 +267,7 @@ Snacks.toggle({
 -- end, { noremap = true })
 
 -- require("copilot.command").disable()
-local copilot_enabled = false
+local copilot_enabled = true
 local copilot_not_loaded = true
 Snacks.toggle({
     name = "Copilot",
@@ -254,10 +275,10 @@ Snacks.toggle({
         return copilot_enabled
     end,
     set = function()
-        if copilot_not_loaded then
-            require("plugins.copilot").config()
-            copilot_not_loaded = false
-        end
+        -- if copilot_not_loaded then
+        --     require("plugins.copilot").config()
+        --     copilot_not_loaded = false
+        -- end
 
         copilot_enabled = not copilot_enabled
         if copilot_enabled then
@@ -269,75 +290,82 @@ Snacks.toggle({
 }):map("<leader>uo")
 
 -- nvim cmp
-vim.b.completion = true
+local cmp_enabled = true
 Snacks.toggle({
-  name = "Completion",
-  get = function()
-    return vim.b.completion
-  end,
-  set = function(state)
-    vim.b.completion = not state
-  end,
+    name = "Completion",
+    get = function()
+        return cmp_enabled
+    end,
+    set = function(state)
+        cmp_enabled = state
+        require("cmp").setup({ enabled = cmp_enabled })
+    end,
 }):map("<leader>uc")
 
--- i dont care anymore
-map("n", "<leader>of", function()
-    Snacks.zen.zen({
-        win = {
-            width = 0,
-        },
-    })
-end, {})
-
-map("n", "<leader>op", function()
-    Snacks.zen.zen({
-        window = {
-            width = 0.5,
-        },
-    })
-end, {})
+-- -- i dont care anymore
+-- map("n", "<leader>zf", function()
+--     Snacks.zen.zen({
+--         win = {
+--             width = 0,
+--         },
+--     })
+-- end, {})
+--
+-- map("n", "<leader>zp", function()
+--     Snacks.zen.zen({
+--         window = {
+--             width = 0.5,
+--             backdrop = 0,
+--         },
+--     })
+-- end, {})
 
 -- copilot chat
-map("n", "<leader>i", "", { desc = "+ai" })
+-- map("n", "<leader>i", "", { desc = "+ai" })
 
-map("n", "<leader>is", ":CopilotChatVisual<cr>", { silent = true, desc = "CopilotChat - Open in vertical split" })
-map("n", "<leader>if", ":CopilotChatInline<cr>", { silent = true, desc = "CopilotChat - Open in float window" })
-map("n", "<C-u>", ":CopilotChatInline<cr>", { silent = true, desc = "CopilotChat - Open in float window" })
+-- map("n", "<leader>is", ":CopilotChatVisual<cr>", { silent = true, desc = "CopilotChat - Open in vertical split" })
+-- map("n", "<leader>if", ":CopilotChatInline<cr>", { silent = true, desc = "CopilotChat - Open in float window" })
+-- map("n", "<C-u>", ":CopilotChat<cr>", { silent = true, desc = "CopilotChat - Open in float window" })
+-- -- map("n", "<C-u>", ":AvanteToggle<cr>", { silent = true, desc = "Open Avante in Split Window" })
 
-map({ "n", "v" }, "<leader>ip", function()
-    local mode = vim.fn.mode()
-    local actions = require("CopilotChat.actions")
-    local tsi = require("CopilotChat.integrations.telescope")
-    if mode == "n" then
-        tsi.pick(actions.prompt_actions())
-    else
-        tsi.pick(actions.prompt_actions({ selection = require("CopilotChat.select").visual }))
-    end
-end, { desc = "CopilotChat - Prompt actions" })
+-- vim.keymap.set({ "n", "v" }, "<leader>ia", "<cmd>CodeCompanionActions<cr>", { noremap = true, silent = true })
+-- vim.keymap.set({ "n", "v" }, "<C-u>", "<cmd>CodeCompanionChat Toggle<cr>", { noremap = true, silent = true })
+-- vim.keymap.set("v", "ga", "<cmd>CodeCompanionChat Add<cr>", { noremap = true, silent = true })
+-- -- Expand 'cc' into 'CodeCompanion' in the command line
+vim.cmd([[cab cc CodeCompanion]])
 
-map({ "n", "v" }, "<leader>ia", function()
-    local mode = vim.fn.mode()
-    local input = vim.fn.input("Ask Copilot: ")
-    if input ~= "" then
-        if mode == "n" then
-            vim.cmd("CopilotChat " .. input)
-        else
-            require("CopilotChat").ask(input, { selection = require("CopilotChat.select").visual })
-        end
-    end
-end, { desc = "CopilotChat - Ask Copilot" })
+-- map({ "n", "v" }, "<leader>ip", function()
+--     local mode = vim.fn.mode()
+--     local actions = require("CopilotChat.actions")
+--     local tsi = require("CopilotChat.integrations.telescope")
+--     if mode == "n" then
+--         tsi.pick(actions.prompt_actions())
+--     else
+--         tsi.pick(actions.prompt_actions({ selection = require("CopilotChat.select").visual }))
+--     end
+-- end, { desc = "CopilotChat - Prompt actions" })
+--
+-- map({ "n", "v" }, "<leader>ia", function()
+--     local mode = vim.fn.mode()
+--     local input = vim.fn.input("Ask Copilot: ")
+--     if input ~= "" then
+--         if mode == "n" then
+--             vim.cmd("CopilotChat " .. input)
+--         else
+--             require("CopilotChat").ask(input, { selection = require("CopilotChat.select").visual })
+--         end
+--     end
+-- end, { desc = "CopilotChat - Ask Copilot" })
 
 -- harpoon
 local function harpoonMap()
     local harpoon = require("harpoon")
     map("n", "<leader>a", function()
         harpoon:list():add()
-        print("Add to Harpoon List")
     end, { desc = "Add Buffer to Harpoon List" })
 
     -- map("n", "<leader>r", function()
     --   harpoon:list():remove()
-    --   print("Removed from Harpoon List")
     -- end, { desc = "Delete Buffer From Harpoon List" })
 
     map("n", "<leader>h", function()
@@ -393,9 +421,9 @@ map({ "o", "x" }, "R", function()
     require("flash").treesitter_search()
 end, { desc = "Treesitter Search" })
 
-map("n", "<leader>vf", function()
+map("n", "<leader>ncs", function()
     vim.ui.input({
-        prompt = "Vault Name: ",
+        prompt = "Subdir Name: ",
     }, function(vault_name)
         if not vault_name or vault_name == "" then
             return
@@ -406,16 +434,13 @@ map("n", "<leader>vf", function()
 
         if vim.fn.isdirectory(vault_path) == 0 then
             vim.fn.mkdir(vault_path, "p")
-            vim.notify("Vault created: " .. vault_path, "info")
+            vim.notify("Subdir created: " .. vault_path, "info")
         else
-            vim.notify("Vault already exists: " .. vault_path, "error")
+            vim.notify("Subdir already exists: " .. vault_path, "error")
         end
     end)
 end)
-
-map("n", "<leader>vip", ":ObsidianPasteImg<cr>", opts)
-
-map("n", "<leader>vn", function()
+map("n", "<leader>ncn", function()
     local vault_base = "/home/erick/vaults/notes"
 
     -- Step 1: list vaults (folders)
@@ -425,7 +450,7 @@ map("n", "<leader>vn", function()
         return vim.fn.fnamemodify(path, ":t") -- just folder name
     end, vaults)
 
-    vim.ui.select(vault_names, { prompt = "Choose vault:" }, function(vault)
+    vim.ui.select(vault_names, { prompt = "Choose subdir:" }, function(vault)
         if not vault then
             return
         end
@@ -473,6 +498,67 @@ map("n", "<leader>vn", function()
     end)
 end, { desc = "Obsidian new note" })
 
+-- search in subdirs with telescope
+
+map("n", "<leader>ns", function()
+    local vault_base = "/home/erick/vaults/notes"
+
+    -- Step 1: list vaults (folders)
+    local vaults = scan.scan_dir(vault_base, { only_dirs = true, depth = 1 })
+
+    local vault_names = vim.tbl_map(function(path)
+        return vim.fn.fnamemodify(path, ":t") -- just folder name
+    end, vaults)
+
+    vim.ui.select(vault_names, { prompt = "Choose subdir:" }, function(vault)
+        if not vault then
+            return
+        end
+
+        local dir = vault_base .. "/" .. vault
+        require("telescope.builtin").find_files({ cwd = dir })
+    end)
+end, { desc = "Obsidian find note" })
+
+
+map("n", "<leader>op", ":OverseerOpen<CR>", opts)
+map("n", "<leader>or", ":OverseerRun<CR>", opts)
+map("n", "<leader>oc", ":OverseerClose<CR>", opts)
+map("n", "<leader>os", ":OverseerShell<CR>", opts)
+map("n", "<leader>ot", ":OverseerToggle<CR>", opts)
+map("n", "<leader>oa", ":OverseerTaskAction<CR>", opts)
+map("n", "<leader>owr", ":WatchRun<CR>", opts)
+
+-- map("n", "<Leader>md", ":vertical botright terminal leaf -w %<CR>", opts)
+-- map("n", "<Leader>md", ":vertical botright terminal leaf -w %<CR>", opts)
+
+-- vim.keymap.set("n", "<leader>[[", function ()
+--     vim.opt_local.wrap = true
+--     vim.opt_local.breakindent = true
+--     vim.opt_local.number = false
+--     vim.opt_local.relativenumber = false
+--     vim.opt_local.formatlistpat = [[\v^\s*(\d+\.|[-+*])\s+]]
+--     vim.opt_local.formatoptions:append("n")
+--
+--     vim.opt_local.breakindentopt = "list:-1"
+--     vim.cmd("Wrapwidth 80")
+--     vim.cmd("MarkdownTableToggleReader")
+-- end, { desc = "Toggle Wrap Mode" })
+
+-- vim.keymap.set("n", "<leader>ttt", function()
+--   require("overseer").run_task({ name = "Make Build" }, function(task)
+--     if task then
+--       task:subscribe("on_complete", function(value)
+--         if value.status == "SUCCESS" then
+--           require("dap").continue() -- Inicia o debugger após o sucesso
+--         else
+--           vim.notify("Build falhou, debugger não iniciado.", vim.log.levels.ERROR)
+--         end
+--       end)
+--     end
+--   end)
+-- end)
+
 -- other stuff
-require("utils.fileWatcher"):setup()
+-- require("utils.fileWatcher"):setup()
 require("utils.pined").load_pined()
