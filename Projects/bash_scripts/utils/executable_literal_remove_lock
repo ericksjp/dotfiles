@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# ~/.var/app/com.spotify.Client/config/spotify
+# ~/.cache/spotify/
+
+if [[ "$1" == "br" ]]; then
+    echo "Usage: remove_lock <config_path>"
+    exit 1
+fi
+
+find "$1" -type l -iname 'singleton*' | xargs -i rm {}

@@ -1,0 +1,19 @@
+0000000000000000000000000000000000000000 1b4497fc8f51cfc1f326f3474203f9ea6dfd3804 erick <erick@192.168.0.9> 1765018966 -0300	fetch --depth=1 origin: storing head
+1b4497fc8f51cfc1f326f3474203f9ea6dfd3804 95de26572e6790ea178193580c625c9109119176 ericksjp <ericksjp703.gmail.com> 1766149955 -0300	pull --quiet --rebase origin master: fast-forward
+95de26572e6790ea178193580c625c9109119176 a79b37b95461ea2be32578957473375954ab31ff ericksjp <ericksjp703.gmail.com> 1767230150 -0300	pull --quiet --rebase origin master: fast-forward
+a79b37b95461ea2be32578957473375954ab31ff 35068db8373917a23eb9e3dabeb6596348e6534c ericksjp <ericksjp703.gmail.com> 1768359243 -0300	pull --quiet --rebase origin master: fast-forward
+35068db8373917a23eb9e3dabeb6596348e6534c 41c5b9677afaf239268197546cfc8e003a073c97 Erick Ribeiro <ericksjp703@gmail.com> 1770606076 -0300	pull --quiet --rebase origin master: fast-forward
+41c5b9677afaf239268197546cfc8e003a073c97 52d93f18d61f11db69b4591d7fc7bd5578954d30 Erick Ribeiro <ericksjp703@gmail.com> 1771726223 -0300	pull --quiet --rebase origin master: fast-forward
+52d93f18d61f11db69b4591d7fc7bd5578954d30 5c4f27b7166360bd23709f24642b247eac30a147 Erick Ribeiro <ericksjp703@gmail.com> 1772072703 -0300	pull --quiet --rebase origin master: fast-forward
+5c4f27b7166360bd23709f24642b247eac30a147 9151236d1e0cb64b2e803d7ec1736c7a717efc33 Erick Ribeiro <ericksjp703@gmail.com> 1774361636 -0300	pull --quiet --rebase origin master: fast-forward
+9151236d1e0cb64b2e803d7ec1736c7a717efc33 9e2c1548c3dfeefd055e1c6606f66657093ae928 Erick Ribeiro <ericksjp703@gmail.com> 1774926014 -0300	pull --quiet --rebase origin master: fast-forward
+9e2c1548c3dfeefd055e1c6606f66657093ae928 061f773dd356df52a8bccd5e73377c012f97ef14 Erick Ribeiro <ericksjp703@gmail.com> 1776075380 -0300	pull --quiet --rebase origin master: fast-forward
+061f773dd356df52a8bccd5e73377c012f97ef14 349b9e49ced7682e27927ffb34b6522f011f3e74 Erick Ribeiro <ericksjp703@gmail.com> 1777232277 -0300	pull --quiet --rebase origin master: fast-forward
+349b9e49ced7682e27927ffb34b6522f011f3e74 3604dc23e0d95b5ce9a3932838a7b103ef5ff0c1 Erick Ribeiro <ericksjp703@gmail.com> 1778338073 -0300	pull --quiet --rebase origin master: fast-forward
+3604dc23e0d95b5ce9a3932838a7b103ef5ff0c1 cb64103161b69d59e1efefeb761ac85564c44698 Erick Ribeiro <ericksjp703@gmail.com> 1779467882 -0300	pull --quiet --rebase origin master: fast-forward
+cb64103161b69d59e1efefeb761ac85564c44698 70ad5e3df8f7bed68aa6672029496926e632aedd Erick Ribeiro <ericksjp703@gmail.com> 1780573343 -0300	pull --quiet --rebase origin master: fast-forward
+70ad5e3df8f7bed68aa6672029496926e632aedd df34d2b8d575777465aed8ae9b7cd90d63fdcd6e Erick Ribeiro <ericksjp703@gmail.com> 1781937733 -0300	pull --quiet --rebase origin master: fast-forward
+df34d2b8d575777465aed8ae9b7cd90d63fdcd6e 677a4592b18c08ddea737f8aca70bac0e9fc9313 Erick Ribeiro <ericksjp703@gmail.com> 1784257546 -0300	pull --quiet --rebase origin master: fast-forward
+677a4592b18c08ddea737f8aca70bac0e9fc9313 7ea697fd8138550ddf7262456d412f0dcd1cbf84 Erick Ribeiro <ericksjp703@gmail.com> 1785373922 -0300	pull --quiet --rebase origin master: fast-forward
+7ea697fd8138550ddf7262456d412f0dcd1cbf84 b54a71977574cfcf659cc2f15a5e6422f17a8da7 Erick Ribeiro <ericksjp703@gmail.com> 1786493318 -0300	pull --quiet --rebase origin master: fast-forward
+b54a71977574cfcf659cc2f15a5e6422f17a8da7 ec03bc620c8a9e30f74e6fcc6dc171a35cd82b1f Erick Ribeiro <ericksjp703@gmail.com> 1787627748 -0300	pull --quiet --rebase origin master: fast-forward

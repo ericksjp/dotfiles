@@ -1,0 +1,14 @@
+[tools]
+"github:BurntSushi/ripgrep" = "latest"
+"github:ajeetdsouza/zoxide" = "latest"
+"github:jesseduffield/lazygit" = "latest"
+"github:junegunn/fzf" = "latest"
+"github:neovim/neovim" = "latest"
+"github:sharkdp/fd" = "latest"
+"github:tmux/tmux" = "latest"
+"github:twpayne/chezmoi" = "latest"
+go = "latest"
+"go:github.com/go-delve/delve/cmd/dlv" = "latest"
+node = "lts"
+
+[env]

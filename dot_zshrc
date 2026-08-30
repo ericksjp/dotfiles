@@ -1,0 +1,74 @@
+# ==============================================================================
+# Environment Variables
+# ==============================================================================
+export NODE_ENV="development"
+export TERM="xterm-256color"
+export EDITOR="nvim"
+export EDGE_PATH="/bin/brave-browser"
+export DISABLE_AUTO_TITLE="true"
+
+# Base PATH setup
+export PATH="$HOME/.local/bin:$HOME/bin:$HOME/go/bin:$PATH"
+
+# ==============================================================================
+# Oh My Zsh Setup
+# ==============================================================================
+export ZSH="$HOME/.config/oh-my-zsh"
+export ZSH_CUSTOM="$ZSH/custom"
+ZSH_THEME="bira"
+
+plugins=(
+    zsh-autosuggestions
+    zsh-syntax-highlighting
+)
+
+source "$ZSH/oh-my-zsh.sh"
+
+# ==============================================================================
+# Mise (Must load before tools installed by mise)
+# ==============================================================================
+if command -v mise >/dev/null 2>&1; then
+    eval "$(mise activate zsh)"
+elif [ -f "$HOME/.local/bin/mise" ]; then
+    eval "$("$HOME/.local/bin/mise" activate zsh)"
+fi
+
+# ==============================================================================
+# Shell Integrations & CLI Hooks
+# ==============================================================================
+# Initialize zoxide
+if command -v zoxide >/dev/null 2>&1; then
+    eval "$(zoxide init zsh)"
+fi
+
+# Initialize fzf
+if command -v fzf >/dev/null 2>&1; then
+    source <(fzf --zsh)
+fi
+
+# ==============================================================================
+# Keybindings & Functions
+# ==============================================================================
+bindkey '^H' backward-kill-word
+
+function stitle() {
+    echo -en "\e]2;$@\a"
+}
+
+# ==============================================================================
+# Aliases
+# ==============================================================================
+alias c="clear"
+alias o="/bin/xdg-open"
+alias e="nvim"
+alias nano="nvim"
+alias lag="lazygit"
+
+# Scripts & Tmux
+alias rekeyd='sudo cp ~/.config/keyd/default.conf /etc/keyd/default.conf && sudo systemctl restart keyd'
+alias j='tmux new-session \; run-shell ~/.config/tmux/plugins/tmux-resurrect/scripts/restore.sh'
+alias m="$HOME/projects/myscripts/tmux/sessionizer.sh"
+
+# Notes & Vaults
+alias nd="cd ~/vaults/"
+alias no="nvim /home/erick/vaults/inbox/*.md -c 'lua buffers_to_tabs()'"

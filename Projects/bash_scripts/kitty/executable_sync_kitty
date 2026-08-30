@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+BG_FILE_PATH="$HOME/.local/share/nvim/bgfile"
+CURRENT="$(cat $BG_FILE_PATH)"
+
+if [ "$CURRENT" == "dark" ]; then
+    echo "light" > $BG_FILE_PATH
+    kitty @ set-colors -a ~/.config/kitty/themes/Dayfox.conf
+else
+    echo "dark" > $BG_FILE_PATH
+    kitty @ set-colors -a ~/.config/kitty/themes/DarkTheme.conf
+fi
+
+reload-tmux
+
+exit 0
